@@ -154,7 +154,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div class="header-icon">🏗️</div>
       <div>
         <div class="header-title">福國路都更整合系統</div>
-        <div class="header-sub">士林區蘭雅段二小段 ｜ 168戶（含3筆純土地）｜ 46地號 ｜ 土地持分6,510.0m² ｜ 建物15,201.25m²</div>
+        <div class="header-sub">士林區蘭雅段二小段 ｜ 168戶 ｜ 46地號 ｜ 土地持分6,510.0m² ｜ 建物15,201.25m²</div>
       </div>
       <div class="export-btns">
         <button class="export-btn btn-excel" onclick="exportExcel()">📊 <span class="label">Excel</span></button>
@@ -178,19 +178,19 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div class="card-title">🏆 都更同意門檻</div>
       <div class="card-sub" id="tc-summary">4項須全部達 80% 方可申請</div>
       <div class="tc-grid">
-        <div class="tc ng" id="tc1"><span class="tc-badge ng" id="tc1-badge">未達標</span><div class="tc-icon">👤</div><div class="tc-title">① 土地所有權人數</div><div class="tc-pct ng" id="tc1-pct">—</div><div class="tc-detail" id="tc1-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc1-bar" style="width:0%"></div></div><div class="tc-needed" id="tc1-n"></div></div>
-        <div class="tc ng" id="tc2"><span class="tc-badge ng" id="tc2-badge">未達標</span><div class="tc-icon">🗺️</div><div class="tc-title">② 土地同意面積（持分法）</div><div class="tc-pct ng" id="tc2-pct">—</div><div class="tc-detail" id="tc2-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc2-bar" style="width:0%"></div></div><div class="tc-needed" id="tc2-n"></div></div>
-        <div class="tc ng" id="tc3"><span class="tc-badge ng" id="tc3-badge">未達標</span><div class="tc-icon">🏠</div><div class="tc-title">③ 建物所有權人數</div><div class="tc-pct ng" id="tc3-pct">—</div><div class="tc-detail" id="tc3-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc3-bar" style="width:0%"></div></div><div class="tc-needed" id="tc3-n"></div></div>
-        <div class="tc ng" id="tc4"><span class="tc-badge ng" id="tc4-badge">未達標</span><div class="tc-icon">📐</div><div class="tc-title">④ 建物同意面積</div><div class="tc-pct ng" id="tc4-pct">—</div><div class="tc-detail" id="tc4-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc4-bar" style="width:0%"></div></div><div class="tc-needed" id="tc4-n"></div></div>
+        <div class="tc ng" id="tc3"><span class="tc-badge ng" id="tc3-badge">未達標</span><div class="tc-icon">🏠</div><div class="tc-title">建物所有權人數</div><div class="tc-pct ng" id="tc3-pct">—</div><div class="tc-detail" id="tc3-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc3-bar" style="width:0%"></div></div><div class="tc-needed" id="tc3-n"></div></div>
+        <div class="tc ng" id="tc1"><span class="tc-badge ng" id="tc1-badge">未達標</span><div class="tc-icon">👤</div><div class="tc-title">土地所有權人數</div><div class="tc-pct ng" id="tc1-pct">—</div><div class="tc-detail" id="tc1-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc1-bar" style="width:0%"></div></div><div class="tc-needed" id="tc1-n"></div></div>
+        <div class="tc ng" id="tc4"><span class="tc-badge ng" id="tc4-badge">未達標</span><div class="tc-icon">📐</div><div class="tc-title">建物同意面積</div><div class="tc-pct ng" id="tc4-pct">—</div><div class="tc-detail" id="tc4-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc4-bar" style="width:0%"></div></div><div class="tc-needed" id="tc4-n"></div></div>
+        <div class="tc ng" id="tc2"><span class="tc-badge ng" id="tc2-badge">未達標</span><div class="tc-icon">🗺️</div><div class="tc-title">土地同意面積</div><div class="tc-pct ng" id="tc2-pct">—</div><div class="tc-detail" id="tc2-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc2-bar" style="width:0%"></div></div><div class="tc-needed" id="tc2-n"></div></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">📈 意願分布統計</div>
-      <div class="card-sub">建物所有權人戶數（1）｜ 土地所有權人戶數（2）｜ 土地持分面積（3）｜ 建物面積（4）</div>
+      <div class="card-sub">建物所有權人戶數（1）｜ 土地所有權人戶數（2）｜ 建物面積（3）｜ 土地持分面積（4）</div>
       <div class="charts-row" style="grid-template-columns:1fr 1fr 1fr 1fr">
         <div class="chart-block">
-          <div class="chart-label">👤 建物所有權人戶數<span>建物所有權人數計</span></div>
+          <div class="chart-label">🏠 建物所有權人戶數<span>建物所有權人數計</span></div>
           <svg viewBox="0 0 120 120" width="100" height="100">
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="14"/>
             <circle id="p1-agree"    cx="60" cy="60" r="54" fill="none" stroke="#22c55e" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
@@ -208,9 +208,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
             <div class="leg-foot"><span>總計</span><strong id="l1-total">0 戶</strong></div>
           </div>
         </div>
-        <!-- 新增：土地所有權人戶數圓餅圖 -->
         <div class="chart-block">
-          <div class="chart-label">🏡 土地所有權人戶數<span>總戶數175戶｜土地總面積6,510m²</span></div>
+          <div class="chart-label">👤 土地所有權人戶數<span>總戶數175戶｜土地總面積6,510m²</span></div>
           <svg viewBox="0 0 120 120" width="100" height="100">
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="14"/>
             <circle id="p4-agree"    cx="60" cy="60" r="54" fill="none" stroke="#22c55e" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
@@ -226,25 +225,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
             <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div><span class="leg-lbl">其他</span><span class="leg-val" id="l4-other" style="color:#8b5cf6">0</span><span class="leg-pct" id="l4-other-p"></span></div>
             <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div><span class="leg-lbl">待確認</span><span class="leg-val" id="l4-pending" style="color:#f59e0b">0</span><span class="leg-pct" id="l4-pending-p"></span></div>
             <div class="leg-foot"><span>總計</span><strong id="l4-total">0 地號</strong></div>
-          </div>
-        </div>
-        <div class="chart-block">
-          <div class="chart-label">🗺️ 土地面積<span>46地號｜土地總面積6,510m²</span></div>
-          <svg viewBox="0 0 120 120" width="100" height="100">
-            <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="14"/>
-            <circle id="p2-agree"    cx="60" cy="60" r="54" fill="none" stroke="#22c55e" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
-            <circle id="p2-disagree" cx="60" cy="60" r="54" fill="none" stroke="#ef4444" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
-            <circle id="p2-other"    cx="60" cy="60" r="54" fill="none" stroke="#8b5cf6" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
-            <circle id="p2-pending"  cx="60" cy="60" r="54" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
-            <text id="p2-pct" x="60" y="55" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b">0%</text>
-            <text x="60" y="70" text-anchor="middle" font-size="8" fill="#64748b">土地</text>
-          </svg>
-          <div class="leg">
-            <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div><span class="leg-lbl">同意</span><span class="leg-val" id="l2-agree" style="color:#22c55e">—</span><span class="leg-pct" id="l2-agree-p"></span></div>
-            <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div><span class="leg-lbl">不同意</span><span class="leg-val" id="l2-disagree" style="color:#ef4444">—</span><span class="leg-pct" id="l2-disagree-p"></span></div>
-            <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div><span class="leg-lbl">其他</span><span class="leg-val" id="l2-other" style="color:#8b5cf6">—</span><span class="leg-pct" id="l2-other-p"></span></div>
-            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div><span class="leg-lbl">待確認</span><span class="leg-val" id="l2-pending" style="color:#f59e0b">—</span><span class="leg-pct" id="l2-pending-p"></span></div>
-            <div class="leg-foot"><span>總計</span><strong>6,510 m²</strong></div>
           </div>
         </div>
         <div class="chart-block">
@@ -266,6 +246,25 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
             <div class="leg-foot"><span>總計</span><strong>15,201.3 m²</strong></div>
           </div>
         </div>
+        <div class="chart-block">
+          <div class="chart-label">🗺️ 土地面積<span>46地號｜土地總面積6,510m²</span></div>
+          <svg viewBox="0 0 120 120" width="100" height="100">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="#e2e8f0" stroke-width="14"/>
+            <circle id="p2-agree"    cx="60" cy="60" r="54" fill="none" stroke="#22c55e" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
+            <circle id="p2-disagree" cx="60" cy="60" r="54" fill="none" stroke="#ef4444" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
+            <circle id="p2-other"    cx="60" cy="60" r="54" fill="none" stroke="#8b5cf6" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
+            <circle id="p2-pending"  cx="60" cy="60" r="54" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="0 339.3" stroke-dashoffset="84.8" style="transition:stroke-dasharray .8s"/>
+            <text id="p2-pct" x="60" y="55" text-anchor="middle" font-size="18" font-weight="bold" fill="#1e293b">0%</text>
+            <text x="60" y="70" text-anchor="middle" font-size="8" fill="#64748b">土地</text>
+          </svg>
+          <div class="leg">
+            <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div><span class="leg-lbl">同意</span><span class="leg-val" id="l2-agree" style="color:#22c55e">—</span><span class="leg-pct" id="l2-agree-p"></span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div><span class="leg-lbl">不同意</span><span class="leg-val" id="l2-disagree" style="color:#ef4444">—</span><span class="leg-pct" id="l2-disagree-p"></span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#8b5cf6"></div><span class="leg-lbl">其他</span><span class="leg-val" id="l2-other" style="color:#8b5cf6">—</span><span class="leg-pct" id="l2-other-p"></span></div>
+            <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div><span class="leg-lbl">待確認</span><span class="leg-val" id="l2-pending" style="color:#f59e0b">—</span><span class="leg-pct" id="l2-pending-p"></span></div>
+            <div class="leg-foot"><span>總計</span><strong>6,510 m²</strong></div>
+          </div>
+        </div> 
       </div>
     </div>
 
