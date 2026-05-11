@@ -788,7 +788,7 @@ td{padding:4px 7px;border-bottom:1px solid #f1f5f9}tr:nth-child(even) td{backgro
   showToast('PDF 預覽已開啟');
 }
 
-// ── Google Sheets 雲端同步 ────────────────────────────────────────
+// ── Google Sheets 雲端同步 (自動載入增強版) ────────────────────────────────────────
 let GAS_URL = localStorage.getItem('gas_url') || '';
 
 function setGasUrl() {
@@ -799,7 +799,8 @@ function setGasUrl() {
   GAS_URL = url;
   localStorage.setItem('gas_url', url);
   showToast('已儲存 API 網址！');
-  updateSyncStatus('已設定，尚未同步', null);
+  updateSyncStatus('網址已更新，正在嘗試同步...', null);
+  syncFromCloud(); // 設定完後自動拉取一次
 }
 
 function updateSyncStatus(msg, ok) {
@@ -815,11 +816,12 @@ function setSyncBtns(disabled) {
   });
 }
 
+// 修改點：上傳時確保包含所有資料，特別是純土地
 async function syncToCloud() {
   if (!GAS_URL) { showToast('請先設定 API 網址', 'error'); return; }
-  updateSyncStatus('同步中（先拉取再合併上傳）...', null); setSyncBtns(true);
+  updateSyncStatus('正在安全合併並同步到雲端...', null); setSyncBtns(true);
   try {
-    // Step 1: 先從雲端拉最新資料
+    // Step 1: 先從雲端拉取
     let cloudMap = {};
     try {
       const getRes = await fetch(GAS_URL + '?t=' + Date.now());
@@ -827,29 +829,22 @@ async function syncToCloud() {
       if (getData.ok && getData.patch) {
         getData.patch.forEach(p => { cloudMap[p.id] = p; });
       }
-    } catch(e) { /* 拉取失敗則略過合併，直接上傳 */ }
+    } catch(e) { console.warn("無法取得雲端資料進行合併，將直接覆蓋"); }
 
-    // Step 2: 合併（本機優先，但保留雲端已有、本機未修改的資料）
-    // 本機 status 若仍是 pending 且雲端有值，保留雲端值
-    const myChanges = {};
-    units.forEach(u => { myChanges[u.id] = { id: u.id, status: u.status, owner: u.owner, note: u.note }; });
-
-    const merged = {};
-    // 先放雲端資料
-    Object.values(cloudMap).forEach(p => { merged[p.id] = { ...p }; });
-    // 本機有明確修改的覆蓋（status 非 pending，或 owner 非未登記）
-    Object.values(myChanges).forEach(p => {
-      if (!merged[p.id]) { merged[p.id] = p; return; }
-      // 本機 status 非 pending 則覆蓋
-      if (p.status !== 'pending') merged[p.id].status = p.status;
-      // 本機 owner 非未登記則覆蓋
-      if (p.owner && p.owner !== '未登記') merged[p.id].owner = p.owner;
-      // 本機 note 非空則覆蓋
-      if (p.note) merged[p.id].note = p.note;
+    // Step 2: 合併
+    const patch = units.map(u => {
+      // 預設使用本機資料
+      let finalData = { id: u.id, status: u.status, owner: u.owner, note: u.note };
+      // 如果本機是初始狀態 (pending) 且雲端已有資料，則以雲端為準
+      if (u.status === 'pending' && cloudMap[u.id]) {
+        finalData.status = cloudMap[u.id].status;
+        finalData.owner = cloudMap[u.id].owner || u.owner;
+        finalData.note = cloudMap[u.id].note || u.note;
+      }
+      return finalData;
     });
 
-    // Step 3: 上傳合併後的資料
-    const patch = Object.values(merged);
+    // Step 3: 上傳
     const res = await fetch(GAS_URL, {
       method: 'POST',
       body: JSON.stringify({ patch }),
@@ -857,76 +852,71 @@ async function syncToCloud() {
     });
     const data = await res.json();
     if (data.ok) {
-      // Step 4: 把合併結果套用回本機（確保一致）
-      const mergedMap = {};
-      patch.forEach(p => { mergedMap[p.id] = p; });
-      units.forEach(u => {
-        if (mergedMap[u.id]) {
-          u.status = mergedMap[u.id].status;
-          u.owner  = mergedMap[u.id].owner;
-          u.note   = mergedMap[u.id].note;
-        }
+      // 更新本機狀態
+      patch.forEach(p => {
+        const u = units.find(item => item.id === p.id);
+        if (u) { u.status = p.status; u.owner = p.owner; u.note = p.note; }
       });
       renderAll();
-      updateSyncStatus('已安全合併並同步到雲端：' + data.savedAt, true);
-      showToast('已合併並儲存到 Google Sheets！');
+      updateSyncStatus('同步成功：' + data.savedAt, true);
+      showToast('已成功同步至 Google Sheets！');
     } else {
-      updateSyncStatus('同步失敗：' + (data.error || ''), false);
-      showToast('同步失敗', 'error');
+      throw new Error(data.error || '未知錯誤');
     }
   } catch(e) {
-    updateSyncStatus('無法連線：' + e.message, false);
-    showToast('無法連線，請確認網址', 'error');
+    updateSyncStatus('同步失敗：' + e.message, false);
+    showToast('同步失敗', 'error');
   }
   setSyncBtns(false);
 }
 
+// 修改點：自動化載入函數
 async function syncFromCloud() {
-  if (!GAS_URL) { showToast('請先設定 API 網址', 'error'); return; }
-  updateSyncStatus('下載中...', null); setSyncBtns(true);
+  if (!GAS_URL) return;
+  updateSyncStatus('自動同步中...', null); setSyncBtns(true);
   try {
     const res = await fetch(GAS_URL + '?t=' + Date.now());
     const data = await res.json();
-    if (data.ok && data.patch && data.patch.length > 0) {
+    if (data.ok && data.patch) {
       const map = {};
       data.patch.forEach(p => { map[p.id] = p; });
-      let n = 0;
+      let count = 0;
       units.forEach(u => {
         if (map[u.id]) {
           u.status = map[u.id].status || u.status;
           u.owner  = map[u.id].owner  || u.owner;
           u.note   = map[u.id].note   !== undefined ? map[u.id].note : u.note;
-          n++;
+          count++;
         }
       });
       renderAll();
-      updateSyncStatus('已從雲端更新（' + (data.savedAt||'') + '）', true);
-      showToast('從 Sheets 更新了 ' + n + ' 筆資料！');
-    } else if (data.patch && data.patch.length === 0) {
-      updateSyncStatus('雲端尚無資料，請先上傳', false);
-      showToast('雲端尚無資料', 'error');
-    } else {
-      updateSyncStatus('下載失敗：' + (data.error||''), false);
+      updateSyncStatus('雲端資料已就緒 (' + (data.savedAt || '剛才') + ')', true);
+      console.log('從雲端同步了 ' + count + ' 筆資料');
     }
   } catch(e) {
-    updateSyncStatus('無法連線：' + e.message, false);
-    showToast('無法連線', 'error');
+    updateSyncStatus('自動同步失敗', false);
+    console.error("雲端同步失敗:", e);
   }
   setSyncBtns(false);
 }
 
 function markDirty() {
-  if (GAS_URL) updateSyncStatus('有未同步的修改，記得按「上傳到 Sheets」', null);
+  if (GAS_URL) updateSyncStatus('資料已修改，記得點擊「同步到雲端」', null);
 }
 
-// 初始化：恢復已儲存的 API URL
+// ═══════════════════════════════════════════════════════════
+// 初始化邏輯：開啟網頁自動執行
+// ═══════════════════════════════════════════════════════════
 (function() {
   const s = localStorage.getItem('gas_url');
   if (s) {
     GAS_URL = s;
-    const el = document.getElementById('gas-url-input');
-    if (el) el.value = s;
-    setTimeout(() => updateSyncStatus('已設定 API 網址，可開始同步', null), 200);
+    // 確保 DOM 載入後填入網址並啟動同步
+    document.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('gas-url-input');
+      if (el) el.value = s;
+      syncFromCloud(); // 重要：網頁開啟自動同步
+    });
   }
 })();
 
