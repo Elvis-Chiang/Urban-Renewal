@@ -914,16 +914,15 @@ async function syncToCloud() {
 // 修改點：自動化載入函數
 async function syncFromCloud() {
   if (!GAS_URL) return;
-  // 1. 找到所有需要載入效果的卡片 (前四張統計卡片)
-  const dashboardCards = document.querySelectorAll('.grid .card');
+const dashboardCards = document.querySelectorAll('.grid .card');
   dashboardCards.forEach(card => {
-    // 檢查是否已有遮罩，避免重複加入
     if (!card.querySelector('.card-loader')) {
       const loader = document.createElement('div');
       loader.className = 'card-loader';
-      loader.innerHTML = '<div class="spinner-large"></div><div style="margin-top:8px; font-size:12px; color:#1e3a5f; font-weight:bold;">同步中...</div>`;
+      loader.innerHTML = '<div class="spinner-large"></div><div style="margin-top:10px;font-size:12px;color:#1e3a5f;font-weight:bold;">數據同步中...</div>';
       card.appendChild(loader);
-    });  
+    }
+  });
   updateSyncStatus('自動同步中...', null); setSyncBtns(true);
   try {
     // 關鍵：給瀏覽器 50 毫秒的「喘息時間」來渲染遮罩，再去連線
@@ -951,13 +950,10 @@ async function syncFromCloud() {
     console.error("雲端同步失敗:", e);
   } finally {
     // 2. 結束載入：移除所有卡片的遮罩
-    dashboardCards.forEach(card => {
-      const loader = card.querySelector('.card-loader');
-      if (loader) {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.remove(), 300); // 配合過渡動畫後移除
-      }
-    });
+    document.querySelectorAll('.card-loader').forEach(el => el.remove());
+    if (typeof setSyncBtns === 'function') setSyncBtns(false);
+  }
+}
     setSyncBtns(false);
   }
 }
