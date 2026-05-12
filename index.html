@@ -830,7 +830,8 @@ td{padding:4px 7px;border-bottom:1px solid #f1f5f9}tr:nth-child(even) td{backgro
 }
 
 // ── Google Sheets 雲端同步 (自動載入增強版) ────────────────────────────────────────
-let GAS_URL = localStorage.getItem('gas_url') || '';
+const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbxXfTJupHjzTqNPl6oi9XV_Q351yGpAxSg80YDmQoeuurL5zCc2d9P9hw6kUXBquyKD/exec';
+let GAS_URL = localStorage.getItem('gas_url') || DEFAULT_GAS_URL;
 
 function setGasUrl() {
   const url = document.getElementById('gas-url-input').value.trim();
@@ -963,16 +964,12 @@ function markDirty() {
 // 初始化邏輯：開啟網頁自動執行
 // ═══════════════════════════════════════════════════════════
 (function() {
-  const s = localStorage.getItem('gas_url');
-  if (s) {
-    GAS_URL = s;
-    // 確保 DOM 載入後填入網址並啟動同步
-    document.addEventListener('DOMContentLoaded', () => {
-      const el = document.getElementById('gas-url-input');
-      if (el) el.value = s;
-      syncFromCloud(); // 重要：網頁開啟自動同步
-    });
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('gas-url-input');
+    if (el) el.value = GAS_URL;
+    renderAll(); // 先畫出初始畫面
+    if (GAS_URL) syncFromCloud(); // 自動啟動同步
+  });
 })();
 
 renderAll();
