@@ -954,8 +954,6 @@ const dashboardCards = document.querySelectorAll('.grid .card');
     if (typeof setSyncBtns === 'function') setSyncBtns(false);
   }
 }
-    setSyncBtns(false);
-}
 
 function markDirty() {
   if (GAS_URL) updateSyncStatus('資料已修改，記得點擊「同步到雲端」', null);
