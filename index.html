@@ -30,6 +30,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
 .export-btn{padding:6px 12px;border:none;border-radius:7px;cursor:pointer;font-weight:800;font-size:11px;font-family:inherit;display:flex;align-items:center;gap:3px;transition:all .2s}
 .btn-excel{background:var(--green);color:#fff}.btn-excel:hover{background:#16a34a}
 .btn-pdf{background:var(--red);color:#fff}.btn-pdf:hover{background:#dc2626}
+.btn-sync{background:var(--amber);color:#fff}.btn-sync:hover{background:#d97706}
 .tabs{display:flex;gap:3px;flex-wrap:wrap}
 .tab-btn{padding:8px 13px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;border-radius:7px 7px 0 0;background:rgba(255,255,255,.15);color:rgba(255,255,255,.85);transition:all .2s;white-space:nowrap}
 .tab-btn.active{background:#fff;color:var(--blue-dark)}
@@ -156,36 +157,37 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+  background: rgba(255, 255, 255, 0.82);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(2px); /* 輕微模糊效果，更具質感 */
+  backdrop-filter: blur(2px);
+  border-radius: var(--rl);
   transition: opacity 0.3s;
 }
 
 /* 遮罩內的轉圈圈 */
 .spinner-large {
-  width: 35px;
-  height: 35px;
+  width: 36px;
+  height: 36px;
   border: 4px solid #e2e8f0;
-  border-top: 4px solid #2563eb; /* 藍色旋轉條 */
+  border-top: 4px solid #2563eb;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.85s linear infinite;
 }
 
 /* 載入文字 */
 .card-loader .loader-text {
   margin-top: 10px;
   font-size: 12px;
-  color: #64748b;
-  font-weight: 500;
+  color: #1e3a5f;
+  font-weight: 700;
+  letter-spacing: .3px;
 }
 
 @keyframes spin { to { transform: rotate(360deg); }}
-}
 </style>
 </head>
 <body>
@@ -198,6 +200,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
         <div class="header-sub">士林區蘭雅段二小段 ｜ 168戶 ｜ 46地號 ｜ 土地持分6,510.0m² ｜ 建物15,201.25m²</div>
       </div>
       <div class="export-btns">
+        <button class="export-btn btn-sync sync-action-btn" onclick="syncToCloud()">☁️ <span class="label">雲端上傳</span></button>
         <button class="export-btn btn-excel" onclick="exportExcel()">📊 <span class="label">Excel</span></button>
         <button class="export-btn btn-pdf"   onclick="exportPDF()">📄 <span class="label">PDF</span></button>
       </div>
@@ -315,30 +318,10 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div id="ms-list"></div>
     </div>
 
-    <div class="card">
-      <div class="card-title">&#x2601;&#xFE0F; Google Sheets 雲端同步</div>
-      <div class="card-sub" id="sync-status" style="color:#f59e0b">請先貼上 Apps Script 網址完成設定</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
-        <input id="gas-url-input" placeholder="貼上 Apps Script 部署網址（https://script.google.com/...）"
-          style="flex:1;min-width:180px;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:11px;font-family:inherit;outline:none">
-        <button onclick="setGasUrl()" style="padding:8px 12px;border:none;border-radius:8px;background:#1e3a5f;color:#fff;font-weight:800;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap">&#10003; 設定</button>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="sync-action-btn" onclick="syncToCloud()" style="padding:8px 14px;border:none;border-radius:8px;background:#22c55e;color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit">&#8679; 上傳到 Sheets</button>
-        <button class="sync-action-btn" onclick="syncFromCloud()" style="padding:8px 14px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit">&#8681; 從 Sheets 下載</button>
-      </div>
-      <div style="font-size:10px;color:#94a3b8;line-height:1.7;background:#f8fafc;border-radius:8px;padding:10px">
-        <b>設定步驟（只需做一次）：</b><br>
-        1. 開啟 Google Sheets &#x2192; 擴充功能 &#x2192; Apps Script<br>
-        2. 貼上「福國路都更_AppScript.js」程式碼 &#x2192; 按儲存<br>
-        3. 點「部署」&#x2192;「新增部署作業」&#x2192; 類型：網頁應用程式<br>
-        4. 執行身分：<b>我</b>，存取權：<b>任何人</b> &#x2192; 部署 &#x2192; 複製網址<br>
-        5. 將網址貼到上方欄位並按「設定」<br><br>
-        <b>多人使用說明：</b><br>
-        &#x2B06; <b>上傳</b>：自動先拉雲端最新 &#x2192; 安全合併 &#x2192; 上傳，不會蓋掉別人的資料<br>
-        &#x2B07; <b>下載</b>：拉取最新雲端資料更新本機<br>
-        建議：更新完一個區域後就按上傳，不要累積太多再傳
-      </div>
+    <!-- 隱藏的 GAS 設定介面，保留功能但移除視覺區塊 -->
+    <div id="gas-config-area" style="display:none">
+      <input id="gas-url-input">
+      <span id="sync-status"></span>
     </div>
 
     <div class="card">
@@ -482,25 +465,27 @@ let filterStatus='all', newStatusVal='pending', editingId=null, editStatusVal=nu
 
 // ── 統計 ─────────────────────────────────────────────────────────
 function getOwnerStats(){
-  const total=units.length;
-  const agree=units.filter(u=>u.status==='agree').length;
-  const disagree=units.filter(u=>u.status==='disagree').length;
-  const other=units.filter(u=>u.status==='other').length;
-  const pending=units.filter(u=>u.status==='pending').length;
-  return {total,agree,disagree,other,pending,pct:total?Math.round(agree/total*100):0};
+  // 建物所有權人：排除純土地 (isLandOnly: true)
+  const bldgUnits = units.filter(u => !u.isLandOnly);
+  const total = bldgUnits.length;
+  const agree = bldgUnits.filter(u => u.status === 'agree').length;
+  const disagree = bldgUnits.filter(u => u.status === 'disagree').length;
+  const other = bldgUnits.filter(u => u.status === 'other').length;
+  const pending = bldgUnits.filter(u => u.status === 'pending').length;
+  return { total, agree, disagree, other, pending, pct: total ? Math.round(agree / total * 100) : 0 };
 }
 
 // 土地所有權人戶數：以地號為單位，取該地號下最優先意願（同意>不同意>其他>待確認）
 function getLandOwnerStats(){
   const LAND_OWNER_TOTAL = 175; // 土地所有權人總戶數（固定基數）
-  const agree  =units.filter(u=>u.status==='agree').length;
-  const disagree=units.filter(u=>u.status==='disagree').length;
-  const other  =units.filter(u=>u.status==='other').length;
-  // pending = 尚未確認（包含系統外尚未聯繫的175-已登錄筆數）
-  const known  =agree+disagree+other+units.filter(u=>u.status==='pending').length;
-  const pending=LAND_OWNER_TOTAL-agree-disagree-other;
-  const total  =LAND_OWNER_TOTAL;
-  return {total,agree,disagree,other,pending,pct:Math.round(agree/total*100)};
+  // 土地所有權人：包含所有住戶（含純土地）
+  const agree = units.filter(u => u.status === 'agree').length;
+  const disagree = units.filter(u => u.status === 'disagree').length;
+  const other = units.filter(u => u.status === 'other').length;
+  // pending = 尚未確認（175 - 已明確表態的人數）
+  const pending = Math.max(0, LAND_OWNER_TOTAL - agree - disagree - other);
+  const total = LAND_OWNER_TOTAL;
+  return { total, agree, disagree, other, pending, pct: Math.round(agree / total * 100) };
 }
 
 function getLandStats(){
@@ -551,12 +536,16 @@ function drawDonut(prefix,s){
 function renderDashboard(){
   const os=getOwnerStats(),ls=getLandStats(),bs=getBldgStats(),los=getLandOwnerStats();
 
-  setTC(1,os.pct,`${os.agree}/${os.total}人`,`距80%還差 ${Math.max(0,Math.ceil(os.total*.8)-os.agree)} 人`);
+  // 1: 土地所有權人數 (los)
+  setTC(1,los.pct,`${los.agree}/${los.total}人`,`距80%還差 ${Math.max(0,Math.ceil(los.total*.8)-los.agree)} 人`);
+  // 2: 土地同意面積 (ls)
   setTC(2,ls.pct,`${Math.round(ls.agree).toLocaleString()}/${Math.round(ls.total).toLocaleString()} m²`,`距80%還差約 ${Math.max(0,Math.round(ls.total*.8-ls.agree)).toLocaleString()} m²`);
+  // 3: 建物所有權人數 (os)
   setTC(3,os.pct,`${os.agree}/${os.total}人`,`距80%還差 ${Math.max(0,Math.ceil(os.total*.8)-os.agree)} 人`);
+  // 4: 建物同意面積 (bs)
   setTC(4,bs.pct,`${Math.round(bs.agree).toLocaleString()}/${Math.round(bs.total).toLocaleString()} m²`,`距80%還差約 ${Math.max(0,Math.round(bs.total*.8-bs.agree)).toLocaleString()} m²`);
 
-  const okC=[os.pct,ls.pct,os.pct,bs.pct].filter(p=>p>=80).length;
+  const okC=[los.pct,ls.pct,os.pct,bs.pct].filter(p=>p>=80).length;
   document.getElementById('tc-summary').textContent=okC===4?'🎉 4項門檻全部達標，可申請都更！':`${okC}/4 項達標，尚有 ${4-okC} 項未達 80%`;
 
   drawDonut('p1',os);drawDonut('p2',ls);drawDonut('p3',bs);drawDonut('p4',los);
@@ -632,9 +621,6 @@ function renderSurvey(){
         <div>
           <span style="font-weight:800;font-size:13px">${u.addr}</span>
           ${u.isLandOnly?'<span style="font-size:10px;background:#fef3c7;color:#d97706;padding:1px 6px;border-radius:99px;font-weight:800;margin-left:4px">純土地</span>':''}<span style="font-size:11px;color:#64748b;margin-left:4px">${u.isLandOnly?'':u.unit}</span>
-          ${u.owner!=='未登記'?`<div style="font-size:11px;color:#475569;margin-top:1px">${u.owner}</div>`:''}
-          ${u.isLandOnly?`<div style="font-size:10px;color:#d97706;margin-top:1px">🗺️ 地號：${u.landNo}｜面積：${u.landShare}m²</div>`:''}
-          ${u.note?`<div style="font-size:10px;color:#94a3b8;margin-top:1px">${u.note}</div>`:''}
         </div>
         <div class="status-btns">
           ${Object.entries(STATUS).map(([k,cfg])=>`
@@ -861,6 +847,7 @@ function setSyncBtns(disabled) {
 // 修改點：上傳時確保包含所有資料，特別是純土地
 async function syncToCloud() {
   if (!GAS_URL) { showToast('請先設定 API 網址', 'error'); return; }
+  showCardLoaders('上傳同步中…');
   updateSyncStatus('正在安全合併並同步到雲端...', null); setSyncBtns(true);
   try {
     // Step 1: 先從雲端拉取
@@ -908,22 +895,34 @@ async function syncToCloud() {
   } catch(e) {
     updateSyncStatus('同步失敗：' + e.message, false);
     showToast('同步失敗', 'error');
+  } finally {
+    hideCardLoaders();
+    setSyncBtns(false);
   }
-  setSyncBtns(false);
 }
 
-// 修改點：自動化載入函數
-async function syncFromCloud() {
-  if (!GAS_URL) return;
-const dashboardCards = document.querySelectorAll('.grid .card');
-  dashboardCards.forEach(card => {
+// ── 卡片 Loading 輔助函數 ────────────────────────────────────────
+function showCardLoaders(text) {
+  // 取得目前顯示中分頁的所有卡片（包含 Dashboard 和其他分頁）
+  const activePanel = document.querySelector('.tab-panel.active');
+  const cards = activePanel ? activePanel.querySelectorAll('.card') : document.querySelectorAll('.card');
+  cards.forEach(card => {
     if (!card.querySelector('.card-loader')) {
       const loader = document.createElement('div');
       loader.className = 'card-loader';
-      loader.innerHTML = '<div class="spinner-large"></div><div style="margin-top:10px;font-size:12px;color:#1e3a5f;font-weight:bold;">數據同步中...</div>';
+      loader.innerHTML = `<div class="spinner-large"></div><div class="loader-text">${text || '數據同步中…'}</div>`;
       card.appendChild(loader);
     }
   });
+}
+
+function hideCardLoaders() {
+  document.querySelectorAll('.card-loader').forEach(el => el.remove());
+}
+
+async function syncFromCloud() {
+  if (!GAS_URL) return;
+  showCardLoaders('雲端同步中…');
   updateSyncStatus('自動同步中...', null); setSyncBtns(true);
   try {
     // 關鍵：給瀏覽器 50 毫秒的「喘息時間」來渲染遮罩，再去連線
@@ -950,8 +949,8 @@ const dashboardCards = document.querySelectorAll('.grid .card');
     updateSyncStatus('自動同步失敗', false);
     console.error("雲端同步失敗:", e);
   } finally {
-    // 2. 結束載入：移除所有卡片的遮罩
-    document.querySelectorAll('.card-loader').forEach(el => el.remove());
+    // 結束載入：移除所有卡片的轉圈遮罩
+    hideCardLoaders();
     if (typeof setSyncBtns === 'function') setSyncBtns(false);
   }
 }
