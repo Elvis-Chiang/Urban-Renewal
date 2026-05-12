@@ -146,28 +146,49 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
   .tab-btn{padding:7px 10px;font-size:11px}
 }
 
-/* 轉圈圈動畫 */
-.spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,.3);
+/* 卡片容器設為相對定位，以便遮罩定位 */
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 遮罩層樣式 */
+.card-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  backdrop-filter: blur(2px); /* 輕微模糊效果，更具質感 */
+  transition: opacity 0.3s;
+}
+
+/* 遮罩內的轉圈圈 */
+.card-loader .spinner-large {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #2563eb; /* 藍色旋轉條 */
   border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-  margin-right: 8px;
-  vertical-align: middle;
+  animation: spin 0.8s linear infinite;
+}
+
+/* 載入文字 */
+.card-loader .loader-text {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* 讓數據在載入時顯得模糊或變淡 */
-.loading-fade {
-  opacity: 0.5;
-  filter: blur(1px);
-  transition: all 0.3s;
 }
 </style>
 </head>
@@ -897,6 +918,21 @@ async function syncToCloud() {
 // 修改點：自動化載入函數
 async function syncFromCloud() {
   if (!GAS_URL) return;
+  // 1. 找到所有需要載入效果的卡片 (前四張統計卡片)
+  const dashboardCards = document.querySelectorAll('.grid .card');
+  
+  dashboardCards.forEach(card => {
+    // 檢查是否已有遮罩，避免重複加入
+    if (!card.querySelector('.card-loader')) {
+      const loader = document.createElement('div');
+      loader.className = 'card-loader';
+      loader.innerHTML = `
+        <div class="spinner-large"></div>
+        <div class="loader-text">同步中...</div>
+      `;
+      card.appendChild(loader);
+    }
+  });  
   updateSyncStatus('自動同步中...', null); setSyncBtns(true);
   try {
     const res = await fetch(GAS_URL + '?t=' + Date.now());
@@ -920,8 +956,16 @@ async function syncFromCloud() {
   } catch(e) {
     updateSyncStatus('自動同步失敗', false);
     console.error("雲端同步失敗:", e);
-  }
-  setSyncBtns(false);
+  } finally {
+    // 2. 結束載入：移除所有卡片的遮罩
+    dashboardCards.forEach(card => {
+      const loader = card.querySelector('.card-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => loader.remove(), 300); // 配合過渡動畫後移除
+      }
+    });
+    setSyncBtns(false);
 }
 
 function markDirty() {
