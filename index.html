@@ -201,9 +201,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
         <div class="header-sub">本系統僅供福國路都更推動小組內部溝通與進度追蹤使用，嚴禁外流或用於其他商業用途。資料內容已進行個資遮蔽處理。</div>
       </div>
       <div class="export-btns">
-        <button class="export-btn btn-sync sync-action-btn" onclick="syncToCloud()">☁️ <span class="label">上傳</span></button>
-        <button class="export-btn btn-excel" onclick="exportExcel()">📊 <span class="label">Excel</span></button>
-        <button class="export-btn btn-pdf"   onclick="exportPDF()">📄 <span class="label">PDF</span></button>
+        <button class="export-btn btn-sync sync-action-btn" onclick="syncToCloud()">☁️ <span class="label">雲端上傳</span></button>
       </div>
     </div>
     <div class="tabs">
@@ -325,14 +323,6 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <span id="sync-status"></span>
     </div>
 
-    <div class="card">
-      <div class="card-title">📤 匯出報告</div>
-      <div class="card-sub">匯出目前所有住戶資料與4項門檻統計</div>
-      <div class="export-panel">
-        <button class="export-card green" onclick="exportExcel()"><span class="icon">📊</span><span>Excel</span><span class="desc">明細＋4項門檻統計</span></button>
-        <button class="export-card red"   onclick="exportPDF()"><span class="icon">📄</span><span>PDF</span><span class="desc">門檻＋三圓餅＋明細</span></button>
-      </div>
-    </div>
   </div>
 
   <!-- Survey（不顯示建物面積）-->
@@ -357,6 +347,14 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <button class="confirm-btn" onclick="checkUnitsAuth()" style="margin-left:0; width:200px; padding:8px;">確認解鎖</button>
     </div>
     <div id="units-content" style="display:none; flex-direction:column; gap:14px;">
+      <div class="card">
+        <div class="card-title">📤 匯出報告</div>
+        <div class="card-sub">匯出目前所有住戶資料與4項門檻統計</div>
+        <div class="export-panel">
+          <button class="export-card green" onclick="exportExcel()"><span class="icon">📊</span><span>Excel</span><span class="desc">明細＋4項門檻統計</span></button>
+          <button class="export-card red"   onclick="exportPDF()"><span class="icon">📄</span><span>PDF</span><span class="desc">門檻＋三圓餅＋明細</span></button>
+        </div>
+      </div>
       <div class="filter-bar">
         <button class="filter-btn active" onclick="setFilter('all',this)">全部</button>
         <button class="filter-btn" onclick="setFilter('agree',this)">同意</button>
