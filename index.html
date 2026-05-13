@@ -731,15 +731,55 @@ function renderRankLand(){
 }
 
 // ── Actions ──────────────────────────────────────────────────────
-function quickStatus(id,s){const u=units.find(u=>u.id===id);u.status=s;renderAll();markDirty();showToast(`${u.addr} ${u.unit} → ${STATUS[s].label}`);}
+function quickStatus(id,s){
+  const u=units.find(u=>u.id===id);
+  u.status=s;
+  u.dirty=true; // 標記為已修改
+  renderAll();
+  markDirty();
+  showToast(`${u.addr} ${u.unit} → ${STATUS[s].label}`);
+}
 function startEdit(id){editingId=id;editStatusVal=units.find(u=>u.id===id).status;renderUnits();}
 function setEditStatus(key){editStatusVal=key;Object.entries(STATUS).forEach(([k,cfg])=>{const b=document.getElementById('es-'+k);if(!b)return;b.style.borderColor=k===key?cfg.color:'#e2e8f0';b.style.background=k===key?cfg.bg:'#fff';b.style.color=k===key?cfg.color:'#94a3b8';});}
-function saveEdit(id){const u=units.find(u=>u.id===id);u.owner=document.getElementById('edit-owner').value.trim()||'未登記';u.note=document.getElementById('edit-note').value.trim();u.status=editStatusVal;editingId=null;editStatusVal=null;renderAll();markDirty();showToast('已更新住戶資料');}
+function saveEdit(id){
+  const u=units.find(u=>u.id===id);
+  u.owner=document.getElementById('edit-owner').value.trim()||'未登記';
+  u.note=document.getElementById('edit-note').value.trim();
+  u.status=editStatusVal;
+  u.dirty=true; // 標記為已修改
+  editingId=null;
+  editStatusVal=null;
+  renderAll();
+  markDirty();
+  showToast('已更新住戶資料');
+}
 function cancelEdit(){editingId=null;editStatusVal=null;renderUnits();}
 function setFilter(key,btn){filterStatus=key;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderUnits();}
 function toggleAddForm(){addFormOpen=!addFormOpen;document.getElementById('add-form-wrap').style.display=addFormOpen?'block':'none';if(!addFormOpen){['new-addr','new-unit','new-owner','new-note'].forEach(id=>document.getElementById(id).value='');setNewStatus('pending');}}
 function setNewStatus(key){newStatusVal=key;Object.entries(STATUS).forEach(([k,cfg])=>{const b=document.getElementById('ns-'+k);if(!b)return;b.style.borderColor=k===key?cfg.color:'#e2e8f0';b.style.background=k===key?cfg.bg:'#fff';b.style.color=k===key?cfg.color:'#94a3b8';});}
-function addUnit(){const addr=document.getElementById('new-addr').value.trim();const unit=document.getElementById('new-unit').value.trim();const owner=document.getElementById('new-owner').value.trim();const note=document.getElementById('new-note').value.trim();if(!addr||!unit||!owner){showToast('請填寫地址、樓層、姓名','error');return;}units.push({id:'new-'+Date.now(),addr,unit,owner,status:newStatusVal,note,landNo:'',landShare:0,bldgArea:0});toggleAddForm();renderAll();markDirty();showToast('已新增住戶 '+owner);}
+function addUnit(){
+  const addr=document.getElementById('new-addr').value.trim();
+  const unit=document.getElementById('new-unit').value.trim();
+  const owner=document.getElementById('new-owner').value.trim();
+  const note=document.getElementById('new-note').value.trim();
+  if(!addr||!unit||!owner){showToast('請填寫地址、樓層、姓名','error');return;}
+  units.push({
+    id:'new-'+Date.now(),
+    addr,
+    unit,
+    owner,
+    status:newStatusVal,
+    note,
+    landNo:'',
+    landShare:0,
+    bldgArea:0,
+    dirty:true // 新增的資料也標記為 dirty
+  });
+  toggleAddForm();
+  renderAll();
+  markDirty();
+  showToast('已新增住戶 '+owner);
+}
 function switchTab(name,btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -864,8 +904,11 @@ async function syncToCloud() {
     const patch = units.map(u => {
       // 預設使用本機資料
       let finalData = { id: u.id, status: u.status, owner: u.owner, note: u.note };
-      // 如果本機是初始狀態 (pending) 且雲端已有資料，則以雲端為準
-      if (u.status === 'pending' && cloudMap[u.id]) {
+      
+      // 合併邏輯修正：
+      // 1. 如果本機該筆資料被標記為 dirty (剛改過)，則絕對以本機為準，不看雲端
+      // 2. 如果本機不是 dirty，且本機是初始狀態 (pending)，但雲端已有資料，則以雲端為準
+      if (!u.dirty && u.status === 'pending' && cloudMap[u.id]) {
         finalData.status = cloudMap[u.id].status;
         finalData.owner = cloudMap[u.id].owner || u.owner;
         finalData.note = cloudMap[u.id].note || u.note;
@@ -884,7 +927,12 @@ async function syncToCloud() {
       // 更新本機狀態
       patch.forEach(p => {
         const u = units.find(item => item.id === p.id);
-        if (u) { u.status = p.status; u.owner = p.owner; u.note = p.note; }
+        if (u) { 
+          u.status = p.status; 
+          u.owner = p.owner; 
+          u.note = p.note; 
+          delete u.dirty; // 同步成功後清除 dirty 標記
+        }
       });
       renderAll();
       updateSyncStatus('同步成功：' + data.savedAt, true);
