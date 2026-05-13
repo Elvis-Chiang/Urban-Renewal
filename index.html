@@ -736,8 +736,14 @@ function renderEditRow(u){
 // ── 排名分頁 ─────────────────────────────────────────────────────
 function maskName(name) {
   if (!name || name === '未登記') return name;
+  // 排除文心建設不遮蔽
+  if (name.includes('文心建設')) return name;
+  
   if (name.includes('/')) {
-    return name.split('/').map(n => n.charAt(0) + 'O').join('/');
+    return name.split('/').map(n => {
+      if (n.includes('文心建設')) return n;
+      return n.charAt(0) + 'O';
+    }).join('/');
   }
   return name.charAt(0) + 'O';
 }
