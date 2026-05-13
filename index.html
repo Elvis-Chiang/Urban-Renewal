@@ -341,20 +341,33 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div class="card-title">📋 快速意願登記</div>
       <div style="height:6px"></div>
       <div class="sum-badges" id="survey-summary"></div>
+      <div style="margin-top:12px">
+        <input type="text" id="survey-search" class="fi" placeholder="🔍 搜尋地址或姓名..." oninput="renderSurvey()">
+      </div>
     </div>
     <div id="survey-list"></div>
   </div>
 
   <!-- Units（顯示建物面積、比重、土地持分、比重）-->
   <div id="tab-units" class="tab-panel">
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="setFilter('all',this)">全部</button>
-      <button class="filter-btn" onclick="setFilter('agree',this)">同意</button>
-      <button class="filter-btn" onclick="setFilter('disagree',this)">不同意</button>
-      <button class="filter-btn" onclick="setFilter('other',this)">觀望中</button>
-      <button class="filter-btn" onclick="setFilter('pending',this)">聯繫中</button>
-      <button class="add-btn" onclick="toggleAddForm()">＋ 新增</button>
+    <div id="units-auth-overlay" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; background:#fff; border-radius:var(--rl); box-shadow:var(--shadow);">
+      <div style="font-size:24px; margin-bottom:16px;">🔒</div>
+      <div style="font-weight:800; margin-bottom:12px;">此分頁受保護，請輸入密碼</div>
+      <input type="password" id="units-password" class="fi" style="width:200px; text-align:center; margin-bottom:12px;" placeholder="請輸入密碼">
+      <button class="confirm-btn" onclick="checkUnitsAuth()" style="margin-left:0; width:200px; padding:8px;">確認解鎖</button>
     </div>
+    <div id="units-content" style="display:none; flex-direction:column; gap:14px;">
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all',this)">全部</button>
+        <button class="filter-btn" onclick="setFilter('agree',this)">同意</button>
+        <button class="filter-btn" onclick="setFilter('disagree',this)">不同意</button>
+        <button class="filter-btn" onclick="setFilter('other',this)">觀望中</button>
+        <button class="filter-btn" onclick="setFilter('pending',this)">聯繫中</button>
+        <div style="flex:1; margin:0 10px;">
+          <input type="text" id="units-search" class="fi" style="padding:4px 10px;" placeholder="🔍 搜尋地址或姓名..." oninput="renderUnits()">
+        </div>
+        <button class="add-btn" onclick="toggleAddForm()">＋ 新增</button>
+      </div>
     <div id="add-form-wrap" style="display:none">
       <div class="add-form">
         <div style="font-weight:800;font-size:12px;color:var(--blue-dark);margin-bottom:9px">新增住戶</div>
@@ -374,7 +387,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
         </div>
       </div>
     </div>
-    <div id="units-list"></div>
+      <div id="units-list"></div>
+    </div>
   </div>
 
   <!-- 建物面積排名 -->
@@ -613,10 +627,18 @@ function renderDashboard(){
 // ── Survey（不顯示建物面積）────────────────────────────────────
 function renderSurvey(){
   const s=getOwnerStats();
+  const keyword = document.getElementById('survey-search')?.value.toLowerCase() || '';
+  
   document.getElementById('survey-summary').innerHTML=Object.entries(STATUS).map(([k,cfg])=>
     `<div class="s-badge" style="background:${cfg.bg};color:${cfg.color}">${cfg.icon} ${cfg.label} <strong>${s[k]||0}</strong> 戶</div>`
   ).join('');
-  document.getElementById('survey-list').innerHTML=units.map(u=>`
+
+  const filtered = units.filter(u => 
+    u.addr.toLowerCase().includes(keyword) || 
+    u.owner.toLowerCase().includes(keyword)
+  );
+
+  document.getElementById('survey-list').innerHTML=filtered.map(u=>`
     <div class="survey-card" style="border-left-color:${STATUS[u.status].color}">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px">
         <div>
@@ -635,7 +657,16 @@ function renderSurvey(){
 
 // ── Units（顯示建物面積＋比重、土地持分＋比重）──────────────────
 function renderUnits(){
-  const filtered=filterStatus==='all'?units:units.filter(u=>u.status===filterStatus);
+  const keyword = document.getElementById('units-search')?.value.toLowerCase() || '';
+  let filtered = filterStatus==='all'?units:units.filter(u=>u.status===filterStatus);
+  
+  if (keyword) {
+    filtered = filtered.filter(u => 
+      u.addr.toLowerCase().includes(keyword) || 
+      u.owner.toLowerCase().includes(keyword)
+    );
+  }
+
   const byAddr={};
   filtered.forEach(u=>{const k=u.addr;if(!byAddr[k])byAddr[k]=[];byAddr[k].push(u);});
   const addrs=Object.keys(byAddr).sort();
@@ -644,6 +675,18 @@ function renderUnits(){
       <div class="floor-header">📍 ${addr}</div>
       ${byAddr[addr].map(u=>u.id===editingId?renderEditRow(u):renderUnitRow(u)).join('')}
     </div>`).join(''):`<div class="card" style="text-align:center;color:#94a3b8;padding:28px">此篩選條件下沒有住戶</div>`;
+}
+
+// ── 權限驗證 ──
+function checkUnitsAuth() {
+  const pwd = document.getElementById('units-password').value;
+  if (pwd === '8888') {
+    document.getElementById('units-auth-overlay').style.display = 'none';
+    document.getElementById('units-content').style.display = 'flex';
+    renderUnits();
+  } else {
+    showToast('密碼錯誤', 'error');
+  }
 }
 
 function renderUnitRow(u){
@@ -691,6 +734,14 @@ function renderEditRow(u){
 }
 
 // ── 排名分頁 ─────────────────────────────────────────────────────
+function maskName(name) {
+  if (!name || name === '未登記') return name;
+  if (name.includes('/')) {
+    return name.split('/').map(n => n.charAt(0) + 'O').join('/');
+  }
+  return name.charAt(0) + 'O';
+}
+
 function renderRankBldg(){
   const sorted=[...units].sort((a,b)=>(b.bldgArea||0)-(a.bldgArea||0));
   const maxPct=sorted[0]?(sorted[0].bldgArea/BLDG_TOTAL*100):1;
@@ -702,7 +753,7 @@ function renderRankBldg(){
       <td><span class="rank-no">${i+1}</span></td>
       <td style="font-weight:700;font-size:12px">${u.addr}</td>
       <td style="font-size:11px;color:#64748b">${u.unit}</td>
-      <td style="font-size:11px">${u.owner}</td>
+      <td style="font-size:11px">${maskName(u.owner)}</td>
       <td><span class="status-badge" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}</span></td>
       <td class="num">${u.isLandOnly?'—':u.bldgArea||0}</td>
       <td class="num" style="color:${u.isLandOnly?'#94a3b8':cfg.color}">${u.isLandOnly?'純土地':pct.toFixed(3)+'%'}</td>
@@ -722,7 +773,7 @@ function renderRankLand(){
       <td><span class="rank-no">${i+1}</span></td>
       <td style="font-weight:700;font-size:12px">${u.addr}</td>
       <td style="font-size:11px;color:#64748b">${u.unit}</td>
-      <td style="font-size:11px">${u.owner}</td>
+      <td style="font-size:11px">${maskName(u.owner)}</td>
       <td><span class="status-badge" style="background:${cfg.bg};color:${cfg.color}">${cfg.label}</span></td>
       <td class="num" style="${u.isLandOnly?'color:#d97706;font-weight:900':''}">${(u.landShare||0).toFixed(2)}</td>
       <td class="num" style="color:${u.isLandOnly?'#d97706':cfg.color}">${pct.toFixed(3)}%${u.isLandOnly?' 🏡':''}</td>
