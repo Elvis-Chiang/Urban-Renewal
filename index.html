@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>福國路都更整合系統</title>
+<title>福國路都更整合系統 v8.7</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="importmap">
@@ -1499,7 +1499,7 @@ function buildScene(){
     var bldgW = FLOOR_WIDTH * scaleW - 0.1;
     var bldgD = FLOOR_DEPTH * scaleD - 0.1;
     var bldgH = st.maxFloor * FLOOR_HEIGHT;
-    var pillarH = bldgH; // 光柱高度 = 建物高度（從屋頂往上延伸一倍建物高度）
+    var pillarH = bldgH * 0.5; // 光柱高度 = 建物高度一半
 
     // 光柱本體（從屋頂往上，底部最亮、頂部漸淡）
     var pillarGeo = new THREE.BoxGeometry(bldgW, pillarH, bldgD);
@@ -1533,8 +1533,8 @@ function buildScene(){
       blending: THREE.AdditiveBlending
     });
     var pillar = new THREE.Mesh(pillarGeo, pillarMat);
-    // 光柱底部對齊屋頂，往上延伸
-    pillar.position.set(0, bldgH + pillarH / 2, 0);
+    // 光柱底部對齊屋頂上方，避免重疊
+    pillar.position.set(0, bldgH + 0.05 + pillarH / 2, 0);
     pillar.userData = {isBeam: true};
     grp.add(pillar);
     beamMeshes.push(pillar);
@@ -1936,8 +1936,8 @@ window.map3dReady=false;
     <span class="title">3D 建物地圖 — 福國路都更</span>
     <div id="3d-overlay-filters">
       <button class="filter-btn active" id="beam-toggle" onclick="toggleBeam(this)">💡 光柱 ON</button>
+      <button class="filter-btn" onclick="close3DOverlay()">✕ 關閉</button>
     </div>
-    <button id="3d-overlay-close" onclick="close3DOverlay()">✕ 關閉</button>
   </div>
   <div id="three-container"></div>
   <div id="3dmap-tooltip"></div>
