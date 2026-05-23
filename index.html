@@ -1136,25 +1136,96 @@ renderAll();
 var map3dReady = false;
 function parseFloor(unit){if(unit.includes('B1'))return -1;var m=unit.match(/(\d+)樓/);return m?parseInt(m[1]):1;}
 function getBuildingPos(addr){
+  // ── 門牌群組：同一支樓梯的門牌合併為一棟 ──
+  var ADDR_GROUPS = {
+    '福國路50巷6弄1號':  'g_6_1_3',
+    '福國路50巷6弄3號':  'g_6_1_3',
+    '福國路50巷6弄5號':  'g_6_5_7',
+    '福國路50巷6弄7號':  'g_6_5_7',
+    '福國路50巷6弄9號':  'g_6_9_11',
+    '福國路50巷6弄11號': 'g_6_9_11',
+    '福國路50巷6弄13號': 'g_6_13_15',
+    '福國路50巷6弄15號': 'g_6_13_15',
+    '福國路50巷6弄2號':  'g_6_2_4',
+    '福國路50巷6弄4號':  'g_6_2_4',
+    '福國路50巷6弄6號':  'g_6_6_8',
+    '福國路50巷6弄8號':  'g_6_6_8',
+    '福國路50巷6弄10號': 'g_6_10_12',
+    '福國路50巷6弄12號': 'g_6_10_12',
+
+    // ── 50巷2弄雙門牌群組 ──
+    '福國路50巷2弄1號':  'g_2_1_3',
+    '福國路50巷2弄3號':  'g_2_1_3',
+    '福國路50巷2弄5號':  'g_2_5_7',
+    '福國路50巷2弄7號':  'g_2_5_7',
+    '福國路50巷2弄9號':  'g_2_9_11',
+    '福國路50巷2弄11號': 'g_2_9_11',
+    '福國路50巷2弄13號': 'g_2_13_15',
+    '福國路50巷2弄15號': 'g_2_13_15',
+
+    // ── 福國路主線雙門牌群組 ──
+    '福國路30號': 'g_fg30_32',
+    '福國路32號': 'g_fg30_32',
+    '福國路34號': 'g_fg34_36',
+    '福國路36號': 'g_fg34_36',
+    '福國路38號': 'g_fg38_40',
+    '福國路40號': 'g_fg38_40',
+    '福國路42號': 'g_fg42_44',
+    '福國路44號': 'g_fg42_44',
+    '福國路46號': 'g_fg46_48',
+    '福國路48號': 'g_fg46_48',
+  };
+
+  // 群組 → 主門牌位置 + sw 倍率（2門牌=2倍寬）
+  // 注意：c 座標取兩個門牌的中點
+  // 奇數側原 sw=0.9 → 雙門牌 1.8；偶數側原 sw=1.0 → 雙門牌 2.0
+  var GROUP_POS = {
+    'g_6_1_3':   {c:7.60, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄1號','福國路50巷6弄3號']}, // (8.05+7.15)/2
+    'g_6_5_7':   {c:5.80, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄5號','福國路50巷6弄7號']}, // (6.25+5.35)/2
+    'g_6_9_11':  {c:4.00, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄9號','福國路50巷6弄11號']}, // (4.45+3.55)/2
+    'g_6_13_15': {c:2.20, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄13號','福國路50巷6弄15號']}, // (2.65+1.75)/2
+    'g_6_2_4':   {c:7.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄2號','福國路50巷6弄4號']}, // (8+7)/2, sw=2.0
+    'g_6_6_8':   {c:5.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄6號','福國路50巷6弄8號']}, // (6+5)/2, sw=2.0
+    'g_6_10_12': {c:3.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄10號','福國路50巷6弄12號']}, // (4+3)/2, sw=2.0
+
+    // ── 50巷2弄雙門牌 ──
+    'g_2_1_3':   {c:7.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄1號','福國路50巷2弄3號']}, // (8+7)/2
+    'g_2_5_7':   {c:5.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄5號','福國路50巷2弄7號']}, // (6+5)/2
+    'g_2_9_11':  {c:3.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄9號','福國路50巷2弄11號']}, // (4+3)/2
+    'g_2_13_15': {c:1.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄13號','福國路50巷2弄15號']}, // (2+1)/2
+
+    // ── 福國路主線雙門牌 ──
+    'g_fg30_32': {c:3.1, r:0, sw:1.2, face:'north', addrs:['福國路30號','福國路32號']}, // (2.8+3.4)/2, sw=1.2
+    'g_fg34_36': {c:4.3, r:0, sw:1.2, face:'north', addrs:['福國路34號','福國路36號']}, // (4.0+4.6)/2, sw=1.2
+    'g_fg38_40': {c:5.5, r:0, sw:1.2, face:'north', addrs:['福國路38號','福國路40號']}, // (5.2+5.8)/2, sw=1.2
+    'g_fg42_44': {c:6.7, r:0, sw:1.2, face:'north', addrs:['福國路42號','福國路44號']}, // (6.4+7.0)/2, sw=1.2
+    'g_fg46_48': {c:7.9, r:0, sw:1.2, face:'north', addrs:['福國路46號','福國路48號']}, // (7.6+8.2)/2, sw=1.2
+  };
+
+  // 查群組
+  var gid = ADDR_GROUPS[addr];
+  if(gid && GROUP_POS[gid]){
+    var gp = GROUP_POS[gid];
+    return {c:gp.c, r:gp.r, sw:gp.sw, sd:1.0, face:gp.face, group:gid, groupAddrs:gp.addrs};
+  }
+
   var L={
     '福國路6號':{c:0,r:0, sd:0.7, face:'west'},
-    '中山北路六段35巷42號':{c:0,r:0.7, sd:0.7, face:'west'},
+    '中山北路六段35巷42號':{c:0,r:2.1, sd:0.7, face:'west'},
     '中山北路六段35巷44號':{c:0,r:1.4, sd:0.7, face:'west'},
-    '中山北路六段35巷46號':{c:0,r:2.1, sd:0.7, face:'west'},
+    '中山北路六段35巷46號':{c:0,r:0.7, sd:0.7, face:'west'},
 
-    '福國路24號':{c:1,r:0, sw:0.6, face:'north'},'福國路26號':{c:1.6,r:0, sw:0.6, face:'north'},'福國路28號':{c:2.2,r:0, sw:0.6, face:'north'},'福國路30號':{c:2.8,r:0, sw:0.6, face:'north'},'福國路32號':{c:3.4,r:0, sw:0.6, face:'north'},
-    '福國路34號':{c:4.0,r:0, sw:0.6, face:'north'},'福國路36號':{c:4.6,r:0, sw:0.6, face:'north'},'福國路38號':{c:5.2,r:0, sw:0.6, face:'north'},'福國路40號':{c:5.8,r:0, sw:0.6, face:'north'},'福國路42號':{c:6.4,r:0, sw:0.6, face:'north'},
-    '福國路44號':{c:7.0,r:0, sw:0.6, face:'north'},'福國路46號':{c:7.6,r:0, sw:0.6, face:'north'},'福國路48號':{c:8.2,r:0, sw:0.6, face:'north'},
+    // 福國路主線（已由群組處理：30/32, 34/36, 38/40, 42/44, 46/48）
+    '福國路24號':{c:1,r:0, sw:0.6, face:'north'},
+    '福國路26號':{c:1.6,r:0, sw:0.6, face:'north'},
+    '福國路28號':{c:2.2,r:0, sw:0.6, face:'north'},
 
-    '福國路50巷2弄1號':{c:8,r:2, face:'north'},'福國路50巷2弄3號':{c:7,r:2, face:'north'},'福國路50巷2弄5號':{c:6,r:2, face:'north'},'福國路50巷2弄7號':{c:5,r:2, face:'north'},
-    '福國路50巷2弄9號':{c:4,r:2, face:'north'},'福國路50巷2弄11號':{c:3,r:2, face:'north'},'福國路50巷2弄13號':{c:2,r:2, face:'north'},'福國路50巷2弄15號':{c:1,r:2, face:'north'},
+    // 50巷2弄（已由群組處理：1/3, 5/7, 9/11, 13/15）
 
-    '福國路50巷6弄2號':{c:8,r:3.1, face:'south'},'福國路50巷6弄4號':{c:7,r:3.1, face:'south'},'福國路50巷6弄6號':{c:6,r:3.1, face:'south'},'福國路50巷6弄8號':{c:5,r:3.1, face:'south'},'福國路50巷6弄10號':{c:4,r:3.1, face:'south'},
-    '福國路50巷6弄12號':{c:3,r:3.1, face:'south'},'福國路50巷6弄14號':{c:2,r:3.1, face:'south'},
+    // 6弄偶數側（群組外剩 14號獨立）
+    '福國路50巷6弄14號':{c:2,r:3.1, face:'south'},
 
-    '福國路50巷6弄1號':{c:8.05,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄3號':{c:7.15,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄5號':{c:6.25,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄7號':{c:5.35,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄9號':{c:4.45,r:5.1, sw:0.9, face:'north'},
-    '福國路50巷6弄11號':{c:3.55,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄13號':{c:2.65,r:5.1, sw:0.9, face:'north'},'福國路50巷6弄15號':{c:1.75,r:5.1, sw:0.9, face:'north'},
-
+    // 6弄奇數側已由群組處理；50巷2弄已由群組處理
   };
   return L[addr]||{c:0,r:0,face:'south'};
 }
@@ -1172,6 +1243,7 @@ var beamMeshes = [];
 var beamVisible = true;
 var map3dReady = false;
 var hoveredFloor = null;
+var addrStatsGlobal = {}; // buildScene 後保留供 zoom 等使用
 var addrLabelMap = {}; // addr → Sprite，門牌直接引用（hover 用）
 var addrRoofLabelMap = {}; // addr → Mesh，屋頂門牌標籤（zoom-in 用）
 var floorLabelMap = {}; // addr → [Mesh]，每層樓的標籤
@@ -1219,7 +1291,9 @@ function makeTextSprite(text, opts){
   opts = opts || {};
   var canvas = document.createElement('canvas');
   var pctOnly = !!opts.pctOnly;
-  var cw = 256, ch = pctOnly ? 128 : 128;
+  // 門牌文字較長，增加 canvas 寬度
+  var cw = pctOnly ? 256 : 640;
+  var ch = pctOnly ? 128 : 128;
   canvas.width = cw; canvas.height = ch;
   var ctx = canvas.getContext('2d');
   ctx.textAlign = 'center';
@@ -1240,7 +1314,7 @@ function makeTextSprite(text, opts){
     ctx.strokeStyle = '#00f5ff';
     ctx.lineWidth = 4;
     ctx.stroke();
-    ctx.font = 'bold 36px "Segoe UI", Noto Sans TC, sans-serif';
+    ctx.font = 'bold 40px "Segoe UI", Noto Sans TC, sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.shadowColor = '#00f5ff';
     ctx.shadowBlur = 6;
@@ -1250,7 +1324,9 @@ function makeTextSprite(text, opts){
   tex.minFilter = THREE.LinearFilter;
   var mat = new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false});
   var sp = new THREE.Sprite(mat);
-  sp.scale.set(pctOnly ? 8 : 5, pctOnly ? 4 : 2.5, 1);
+  // scale 比例需與 canvas 一致，避免文字變形
+  // canvas 640:128 = 5:1 → scale 10:2
+  sp.scale.set(pctOnly ? 8 : 10, pctOnly ? 4 : 2, 1);
   return sp;
 }
 
@@ -1291,7 +1367,8 @@ function makeFloorLabel(text, opts){
   var isAddr = opts.isAddr || false;
   var canvas = document.createElement('canvas');
   if(isAddr){
-    canvas.width = 256; canvas.height = 64;
+    // 門牌文字較長，增加 canvas 寬度
+    canvas.width = 640; canvas.height = 100;
   } else {
     canvas.width = 128; canvas.height = 64;
   }
@@ -1300,7 +1377,7 @@ function makeFloorLabel(text, opts){
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if(isAddr){
-    ctx.font = 'bold 36px "Segoe UI", Noto Sans TC, sans-serif';
+    ctx.font = 'bold 48px "Segoe UI", Noto Sans TC, sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 6;
@@ -1315,8 +1392,9 @@ function makeFloorLabel(text, opts){
   var tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
   var mat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthTest:false, side:THREE.DoubleSide});
-  var planeW = isAddr ? 3.2 : 1.6;
-  var planeH = isAddr ? 0.8 : 0.7;
+  // 門牌標籤：canvas 640:100 = 6.4:1 → planeW:planeH 也需保持一致
+  var planeW = isAddr ? (6.4 * (opts.sw || 1.0)) : 1.6;
+  var planeH = isAddr ? 1.0 : 0.7;
   var plane = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), mat);
 
   // 根據 face 方向旋轉平面並偏移到建物正面表面
@@ -1407,24 +1485,53 @@ function init3DMap(){
 
 function buildScene(){
   var data = getBuildingData();
-  // 先計算每個地址的同意比例
-  var addrStats = {};
+
+  // ── 解析門牌群組 ──
+  var addrToGroup = {};  // addr → groupId
+  var groupAddrs = {};   // groupId → [addr, addr]
   data.forEach(function(item){
-    if(!addrStats[item.addr]) addrStats[item.addr] = {total:0, agree:0, maxFloor:0};
-    if(!item.isLandOnly){
-      addrStats[item.addr].total++;
-      if(item.status === 'agree') addrStats[item.addr].agree++;
-      if(item.floorNum > addrStats[item.addr].maxFloor) addrStats[item.addr].maxFloor = item.floorNum;
+    var pos = getBuildingPos(item.addr);
+    if(pos.group){
+      addrToGroup[item.addr] = pos.group;
+      if(!groupAddrs[pos.group]) groupAddrs[pos.group] = pos.groupAddrs || [item.addr];
     }
   });
+
+  // ── 計算統計（群組內門牌合併計算）──
+  var addrStats = {};
+  // 記錄群組內門牌在各樓層的單元
+  var groupFloorUnits = {}; // groupId → { floorNum: [unit, ...] }
+  data.forEach(function(item){
+    if(item.isLandOnly) return;
+    var key = addrToGroup[item.addr] || item.addr; // 群組用 groupId，否則用 addr
+    if(!addrStats[key]) addrStats[key] = {total:0, agree:0, maxFloor:0, addrs:[]};
+    addrStats[key].total++;
+    if(item.status === 'agree') addrStats[key].agree++;
+    if(item.floorNum > addrStats[key].maxFloor) addrStats[key].maxFloor = item.floorNum;
+    if(addrStats[key].addrs.indexOf(item.addr) === -1) addrStats[key].addrs.push(item.addr);
+    // 群組樓層單元記錄
+    if(addrToGroup[item.addr]){
+      var gid = addrToGroup[item.addr];
+      if(!groupFloorUnits[gid]) groupFloorUnits[gid] = {};
+      if(!groupFloorUnits[gid][item.floorNum]) groupFloorUnits[gid][item.floorNum] = [];
+      groupFloorUnits[gid][item.floorNum].push(item);
+    }
+  });
+
+  // 已處理的群組（避免屋頂/光柱重複）
+  var processedGroups = {};
 
   data.forEach(function(item){
     var pos = getBuildingPos(item.addr);
     var scaleW = pos.sw || 1.0;
     var scaleD = pos.sd || 1.0;
     var x = pos.c*SPACING, z = pos.r*SPACING;
-    if(!buildingGroups[item.addr]){ buildingGroups[item.addr] = new THREE.Group(); buildingGroups[item.addr].position.set(x,0,z); scene.add(buildingGroups[item.addr]); }
-    var g = buildingGroups[item.addr];
+
+    // 決定 buildingGroup 的 key
+    var grpKey = pos.group || item.addr;
+    if(!buildingGroups[grpKey]){ buildingGroups[grpKey] = new THREE.Group(); buildingGroups[grpKey].position.set(x,0,z); scene.add(buildingGroups[grpKey]); }
+    var g = buildingGroups[grpKey];
+
     if(item.isLandOnly){
       var m = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,0.2,16), new THREE.MeshLambertMaterial({color:getStatusColor(item.status)}));
       m.position.set(0,0.1,0); m.userData = item; g.add(m); floorMeshes.push(m);
@@ -1432,6 +1539,16 @@ function buildScene(){
       var y = (item.floorNum-1)*FLOOR_HEIGHT+FLOOR_HEIGHT/2;
       var finalW = FLOOR_WIDTH * scaleW - 0.1;
       var finalD = FLOOR_DEPTH * scaleD - 0.1;
+
+      // ── 群組建物：每個門牌佔半邊 ──
+      var isGrouped = !!pos.group;
+      var halfW = finalW / 2;
+      var xOffset = 0;
+      if(isGrouped && pos.groupAddrs){
+        var idx = pos.groupAddrs.indexOf(item.addr);
+        xOffset = idx === 0 ? -halfW/2 : halfW/2; // 左門牌偏左，右門牌偏右
+      }
+
       var mat = new THREE.MeshLambertMaterial({
         color: getStatusColor(item.status),
         transparent: true, opacity: 0.55,
@@ -1439,61 +1556,87 @@ function buildScene(){
         emissive: getStatusColor(item.status),
         emissiveIntensity: 0.25
       });
-      var m = new THREE.Mesh(new THREE.BoxGeometry(finalW, FLOOR_HEIGHT, finalD), mat);
-      m.position.set(0, y, 0); m.castShadow = true; m.receiveShadow = true; m.userData = item;
+      var geoW = isGrouped ? halfW - 0.05 : finalW; // 群組內各半，留一點間隔
+      var m = new THREE.Mesh(new THREE.BoxGeometry(geoW, FLOOR_HEIGHT, finalD), mat);
+      m.position.set(xOffset, y, 0); m.castShadow = true; m.receiveShadow = true; m.userData = item;
       g.add(m); floorMeshes.push(m);
       var edges = new THREE.EdgesGeometry(m.geometry);
       var lineMat = new THREE.LineBasicMaterial({color: getStatusColor(item.status), transparent: true, opacity: 0.8});
       var lineSegments = new THREE.LineSegments(edges, lineMat);
       m.add(lineSegments);
-      // 每層樓標籤（預設隱藏，zoom-in 時顯示）
-      if(!floorLabelMap[item.addr]) floorLabelMap[item.addr] = [];
-      var flLbl = makeFloorLabel(item.floorNum+'F', {face: getBuildingPos(item.addr).face, sw: scaleW, sd: scaleD});
-      flLbl.position.set(flLbl.userData.offsetX, y, flLbl.userData.offsetZ);
+
+      // 樓層標籤
+      var labelKey = item.addr; // 每個門牌各自記錄
+      if(!floorLabelMap[labelKey]) floorLabelMap[labelKey] = [];
+      var flLbl = makeFloorLabel(item.floorNum+'F', {face: pos.face, sw: isGrouped ? scaleW/2 : scaleW, sd: scaleD});
+      flLbl.position.set(xOffset + flLbl.userData.offsetX, y, flLbl.userData.offsetZ);
       flLbl.visible = false;
       flLbl.userData = {isFloorLabel: true};
       g.add(flLbl);
-      floorLabelMap[item.addr].push(flLbl);
+      floorLabelMap[labelKey].push(flLbl);
     }
-    var st = addrStats[item.addr];
-    if(st && st.maxFloor > 0 && item.floorNum===st.maxFloor){
-      var sa = item.addr.replace('福國路','').replace('中山北路六段35巷','中35巷');
+
+    // ── 屋頂標籤 + 光柱（每棟只建一次）──
+    var stKey = pos.group || item.addr;
+    var st = addrStats[stKey];
+    if(st && st.maxFloor > 0 && item.floorNum === st.maxFloor && !processedGroups[stKey]){
+      processedGroups[stKey] = true;
       var pct = st.total > 0 ? Math.round(st.agree / st.total * 100) : 0;
       var pctColor = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
-      var roofW = (FLOOR_WIDTH * (getBuildingPos(item.addr).sw || 1.0) - 0.1);
-      var roofD = (FLOOR_DEPTH * (getBuildingPos(item.addr).sd || 1.0) - 0.1);
-      // 門牌標牌（預設隱藏，滑過才顯示）
-      var addrLbl = makeTextSprite(sa);
+      var roofW = (FLOOR_WIDTH * (pos.sw || 1.0) - 0.1);
+      var roofD = (FLOOR_DEPTH * (pos.sd || 1.0) - 0.1);
+
+      // 門牌縮寫（群組顯示多門牌）
+      var addrShort;
+      if(pos.groupAddrs){
+        addrShort = pos.groupAddrs.map(function(a){ return a.replace('福國路','').replace('中山北路六段35巷','中35巷'); }).join('/');
+      } else {
+        addrShort = item.addr.replace('福國路','').replace('中山北路六段35巷','中35巷');
+      }
+
+      // Hover 門牌 Sprite（提高位置避免被比例遮蔽）
+      var addrLbl = makeTextSprite(addrShort);
       addrLbl.userData = {isAddrLabel: true};
       addrLbl.material.opacity = 0;
       addrLbl.visible = false;
-      addrLbl.position.set(0, st.maxFloor*FLOOR_HEIGHT+1.5, 0);
+      addrLbl.position.set(0, st.maxFloor*FLOOR_HEIGHT+3.5, 0); // 從 2.5 提高到 3.5
+      addrLbl.renderOrder = 1000; // 高於屋頂百分比 (999)
+      addrLbl.material.depthTest = false;
+      addrLbl.material.needsUpdate = true;
       g.add(addrLbl);
-      addrLabelMap[item.addr] = addrLbl;
-      // 比例平貼在屋頂上，尺寸填滿頂面
+      addrLabelMap[stKey] = addrLbl;
+
+      // 屋頂比例平貼
       var roofLbl = makeRoofLabel(pct+'%', {pctColor: pctColor, roofW: roofW, roofD: roofD});
-      roofLbl.position.set(0, st.maxFloor*FLOOR_HEIGHT+0.01, 0);
+      roofLbl.position.set(0, st.maxFloor*FLOOR_HEIGHT+0.02, 0); // 提高一點避免 Z-fighting
+      roofLbl.renderOrder = 999; // 確保最後繪製
+      roofLbl.material.depthTest = false; // 不與其它物體比較深度
+      roofLbl.material.needsUpdate = true;
       g.add(roofLbl);
-      // 屋頂門牌標籤（平貼正面，zoom-in 顯示）
-      var addrRoofLbl = makeFloorLabel(sa, {face: getBuildingPos(item.addr).face, sw: scaleW, sd: scaleD, isAddr: true});
+
+      // 屋頂門牌標籤（zoom-in 顯示）— 群組門牌用合併寬度
+      var labelSw = pos.groupAddrs ? (pos.sw || 2.0) : (pos.sw || 1.0);
+      var addrRoofLbl = makeFloorLabel(addrShort, {face: pos.face, sw: labelSw, sd: scaleD, isAddr: true});
       addrRoofLbl.position.set(addrRoofLbl.userData.offsetX, st.maxFloor*FLOOR_HEIGHT + 0.35, addrRoofLbl.userData.offsetZ);
       addrRoofLbl.visible = false;
       addrRoofLbl.userData.isAddrRoofLabel = true;
       g.add(addrRoofLbl);
-      addrRoofLabelMap[item.addr] = addrRoofLbl;
+      addrRoofLabelMap[stKey] = addrRoofLbl;
     }
   });
 
   // ── 達標光柱：同意比例 ≥ 75% 的建物（從屋頂往上發射）──
-  Object.keys(addrStats).forEach(function(addr){
-    var st = addrStats[addr];
+  Object.keys(addrStats).forEach(function(key){
+    var st = addrStats[key];
     if(st.total === 0) return;
     var pct = Math.round(st.agree / st.total * 100);
     if(pct < 75) return;
 
-    var grp = buildingGroups[addr];
+    var grp = buildingGroups[key];
     if(!grp) return;
-    var bPos = getBuildingPos(addr);
+    // 取群組內第一個門牌的位置資訊
+    var firstAddr = st.addrs[0];
+    var bPos = getBuildingPos(firstAddr);
     var scaleW = bPos.sw || 1.0;
     var scaleD = bPos.sd || 1.0;
     var bldgW = FLOOR_WIDTH * scaleW - 0.1;
@@ -1507,7 +1650,8 @@ function buildScene(){
       uniforms: {
         uColor: {value: new THREE.Color(0x22c55e)},
         uMaxH: {value: pillarH},
-        uAlphaMul: {value: 0.35}
+        uAlphaMul: {value: 0.35},
+        uTime: {value: 0.0}
       },
       vertexShader: [
         'varying float vY;',
@@ -1520,10 +1664,12 @@ function buildScene(){
         'uniform vec3 uColor;',
         'uniform float uMaxH;',
         'uniform float uAlphaMul;',
+        'uniform float uTime;',
         'varying float vY;',
         'void main(){',
-        '  float t = (vY + uMaxH / 2.0) / uMaxH;', // 0=底部(屋頂), 1=頂部
-        '  float alpha = (1.0 - t) * uAlphaMul;',   // 屋頂最亮, 往上漸淡
+        '  float t = (vY + uMaxH / 2.0) / uMaxH;',  // 0=底部(屋頂), 1=頂部
+        '  float pulse = 1.0 + 0.35 * sin(uTime * 1.57);', // 脈動振幅 ±35%，週期約4秒
+        '  float alpha = (1.0 - t) * uAlphaMul * pulse;',  // 屋頂最亮, 往上漸淡 + 脈動
         '  gl_FragColor = vec4(uColor, alpha);',
         '}'
       ].join('\n'),
@@ -1539,6 +1685,9 @@ function buildScene(){
     grp.add(pillar);
     beamMeshes.push(pillar);
   });
+
+  // 保留 addrStats 供外部使用（zoom-in 等）
+  addrStatsGlobal = addrStats;
 
   // 道路
   drawRoad(-27, 60, -7.5, 10, "福國路");
@@ -1643,6 +1792,17 @@ function animate(){
 
   controls.update();
   updateBeamFade();
+
+  // ── 光柱脈動 ──
+  if(beamVisible && !beamFading){
+    var now = performance.now() * 0.001; // 秒
+    beamMeshes.forEach(function(m){
+      if(m.material && m.material.uniforms && m.material.uniforms.uTime){
+        m.material.uniforms.uTime.value = now;
+      }
+    });
+  }
+
   renderer.render(scene,camera);
 }
 
@@ -1707,31 +1867,26 @@ function onMouseMove(e){
   var S = window.STATUS || {};
   if(hits.length>0){
     var hit = hits[0].object.userData;
-    var curAddr = hit.addr;
-    // 還原前一個懸停物件
-    if(hoveredFloor&&hoveredFloor!==hits[0].object){
+    // 上一個 hover 還原
+    if(hoveredFloor && hoveredFloor !== hits[0].object){
       if(hoveredFloor.material.emissive){
         var prevColor = getStatusColor(hoveredFloor.userData.status);
         hoveredFloor.material.emissive.setHex(parseInt(prevColor.replace('#',''),16));
       }
+      if(hoveredAddr){
+        var prevKey = getGrpKey(hoveredAddr);
+        if(addrLabelMap[prevKey]){ addrLabelMap[prevKey].material.opacity = 0; addrLabelMap[prevKey].visible = false; }
+      }
     }
-    // 門牌切換：隱藏舊的、顯示新的
-    if(hoveredAddr && hoveredAddr !== curAddr && addrLabelMap[hoveredAddr]){
-      addrLabelMap[hoveredAddr].material.opacity = 0;
-      addrLabelMap[hoveredAddr].visible = false;
-    }
-    if(curAddr && addrLabelMap[curAddr]){
-      var sp = addrLabelMap[curAddr];
-      sp.material.transparent = true;
-      sp.material.opacity = 1;
-      sp.material.needsUpdate = true;
-      sp.visible = true;
-      sp.renderOrder = 999;
-    }
-    hoveredAddr = curAddr;
     hoveredFloor = hits[0].object;
-    if(hoveredFloor.material.emissive) hoveredFloor.material.emissive.setHex(0x444444);
-    var cfg = S[hit.status]||{label:hit.status,color:'#888',bg:'#eee'};
+    hoveredAddr = hit.addr;
+    // 高亮
+    if(hoveredFloor.material.emissive) hoveredFloor.material.emissive.setHex(0xffffff);
+    // 顯示門牌 label
+    var labelKey = getGrpKey(hit.addr);
+    if(addrLabelMap[labelKey]){ addrLabelMap[labelKey].visible = true; addrLabelMap[labelKey].material.opacity = 1; }
+    // tooltip
+    var cfg={agree:{label:'同意',color:'#22c55e',bg:'#dcfce7'},disagree:{label:'不同意',color:'#ef4444',bg:'#fee2e2'},other:{label:'觀望中',color:'#8b5cf6',bg:'#ede9fe'},pending:{label:'聯繫中',color:'#f59e0b',bg:'#fef3c7'}}[hit.status]||{label:'?',color:'#888',bg:'#eee'};
     tip.style.display='block';
     tip.style.left=Math.min(e.clientX-r.left+15,r.width-290)+'px';
     tip.style.top=Math.min(e.clientY-r.top+15,r.height-180)+'px';
@@ -1743,9 +1898,9 @@ function onMouseMove(e){
         var prevColor = getStatusColor(hoveredFloor.userData.status);
         hoveredFloor.material.emissive.setHex(parseInt(prevColor.replace('#',''),16));
       }
-      if(hoveredAddr && addrLabelMap[hoveredAddr]){
-        addrLabelMap[hoveredAddr].material.opacity = 0;
-        addrLabelMap[hoveredAddr].visible = false;
+      if(hoveredAddr){
+        var prevKey = getGrpKey(hoveredAddr);
+        if(addrLabelMap[prevKey]){ addrLabelMap[prevKey].material.opacity = 0; addrLabelMap[prevKey].visible = false; }
       }
       hoveredAddr = null;
       hoveredFloor=null;
@@ -1764,13 +1919,21 @@ function onClick(){
   var h = hoveredFloor.userData;
   if(!h || !h.addr) return;
 
+  var grpKey = getGrpKey(h.addr);
+
   // 再點同一棟 → 返回全景
-  if(isZoomed && focusedAddr === h.addr){
+  if(isZoomed && focusedAddr === grpKey){
     zoomOut();
     return;
   }
   // 點不同棟 → 切換過去
-  zoomToBuilding(h.addr);
+  zoomToBuilding(grpKey);
+}
+
+// ── 門牌→群組 key 轉換 ──
+function getGrpKey(addr){
+  var pos = getBuildingPos(addr);
+  return pos.group || addr;
 }
 
 // ── Zoom-in / Zoom-out 核心邏輯 ─────────────────────────────────
@@ -1778,8 +1941,8 @@ function easeInOutCubic(t){
   return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3) / 2;
 }
 
-function zoomToBuilding(addr){
-  var grp = buildingGroups[addr];
+function zoomToBuilding(key){
+  var grp = buildingGroups[key];
   if(!grp) return;
 
   // 計算建物中心與高度
@@ -1788,9 +1951,13 @@ function zoomToBuilding(addr){
   box.getCenter(center);
   var topY = box.max.y;
 
-  // 正面面向建物：根據該建物門牌朝向決定相機位置
-  var bPos = getBuildingPos(addr);
-  var face = bPos.face || 'south';
+  // 正面面向建物：取得朝向
+  var face = 'south';
+  var st = addrStatsGlobal[key];
+  if(st && st.addrs && st.addrs.length > 0){
+    var p = getBuildingPos(st.addrs[0]);
+    if(p.face) face = p.face;
+  }
   var dist = 7.5; // 距建物中心水平距離
   // face 方向 = 建物正面朝的方向，相機要在正面「前面」看進來 → 相機在 face 方向
   var faceDir = {south:{x:0,z:1}, north:{x:0,z:-1}, east:{x:1,z:0}, west:{x:-1,z:0}}[face] || {x:0,z:1};
@@ -1809,14 +1976,14 @@ function zoomToBuilding(addr){
   camAnimT = 0;
   camAnimating = true;
   isZoomed = true;
-  focusedAddr = addr;
+  focusedAddr = key;
   controls.enabled = false;
   controls.minDistance = 1;
   controls.maxPolarAngle = Math.PI - 0.01;
 
   var hint = document.getElementById('zoom-hint');
   if(hint) hint.style.display = 'flex';
-  showFloorLabels(addr);
+  showFloorLabels(key);
 }
 
 function zoomOut(){
@@ -1851,17 +2018,38 @@ function restoreControlsLimits(){
   controls.maxPolarAngle = ORIG_MAX_POLAR;
 }
 
-function showFloorLabels(addr){
-  var labels = floorLabelMap[addr];
-  if(labels) labels.forEach(function(sp){ sp.visible = true; });
-  var roofLbl = addrRoofLabelMap[addr];
+function showFloorLabels(key){
+  // key 可能是 groupId 或 addr
+  var addrsToShow;
+  var st = addrStatsGlobal[key];
+  if(st && st.addrs && st.addrs.length > 1){
+    addrsToShow = st.addrs; // 群組：顯示所有門牌的樓層標籤
+  } else {
+    var posInfo = getBuildingPos(key);
+    addrsToShow = posInfo.groupAddrs || [key];
+  }
+  addrsToShow.forEach(function(addr){
+    var labels = floorLabelMap[addr];
+    if(labels) labels.forEach(function(sp){ sp.visible = true; });
+  });
+  var roofLbl = addrRoofLabelMap[key];
   if(roofLbl) roofLbl.visible = true;
 }
 
-function hideFloorLabels(addr){
-  var labels = floorLabelMap[addr];
-  if(labels) labels.forEach(function(sp){ sp.visible = false; });
-  var roofLbl = addrRoofLabelMap[addr];
+function hideFloorLabels(key){
+  var addrsToHide;
+  var st = addrStatsGlobal[key];
+  if(st && st.addrs && st.addrs.length > 1){
+    addrsToHide = st.addrs;
+  } else {
+    var posInfo = getBuildingPos(key);
+    addrsToHide = posInfo.groupAddrs || [key];
+  }
+  addrsToHide.forEach(function(addr){
+    var labels = floorLabelMap[addr];
+    if(labels) labels.forEach(function(sp){ sp.visible = false; });
+  });
+  var roofLbl = addrRoofLabelMap[key];
   if(roofLbl) roofLbl.visible = false;
 }
 
@@ -1933,7 +2121,7 @@ window.map3dReady=false;
 <div id="three-overlay">
   <div id="3d-overlay-header">
     <span style="font-size:20px">🏗️</span>
-    <span class="title">3D 建物地圖 — 福國路都更</span>
+    <span class="title">3D 建物地圖 — 福國路都更 v9.1</span>
     <div id="3d-overlay-filters">
       <button class="filter-btn active" id="beam-toggle" onclick="toggleBeam(this)">💡 光柱 ON</button>
       <button class="filter-btn" onclick="close3DOverlay()">✕ 關閉</button>
