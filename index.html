@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>福國路都更整合系統</title>
+<title>福國路都更整合系統 v9.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="importmap">
@@ -62,8 +62,8 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
 .tc-pct.ok{color:var(--green)}.tc-pct.ng{color:var(--slate-900)}
 .tc-detail{font-size:10px;color:var(--slate-400);margin-top:2px}
 .tc-bar{margin-top:7px;background:var(--slate-200);border-radius:99px;height:5px;overflow:visible;position:relative}
-.tc-bar::before{content:'';position:absolute;top:-4px;left:75%;width:2px;height:13px;background:var(--red);border-radius:1px;opacity:.8}
-.tc-bar::after{content:'75%';position:absolute;top:-16px;left:75%;transform:translateX(-50%);font-size:9px;font-weight:800;color:var(--red);white-space:nowrap}
+.tc-bar::before{content:'';position:absolute;top:-4px;left:80%;width:2px;height:13px;background:var(--red);border-radius:1px;opacity:.8}
+.tc-bar::after{content:'80%';position:absolute;top:-16px;left:80%;transform:translateX(-50%);font-size:9px;font-weight:800;color:var(--red);white-space:nowrap}
 .tc-bar-f{height:100%;border-radius:99px;transition:width 1s ease}
 .tc-bar-f.ok{background:var(--green)}.tc-bar-f.ng{background:var(--amber)}
 .tc-needed{font-size:10px;color:var(--amber);margin-top:3px;min-height:13px}
@@ -241,7 +241,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div class="header-icon">🏗️</div>
       <div>
         <div class="header-title">福國路都更整合系統</div>
-        <div class="header-sub">士林區蘭雅段二小段 ｜ 土地總面積6,510.0m² ｜ 建物總面積(估)15,201.25m²</div>
+        <div class="header-sub">v9.2 ｜ 士林區蘭雅段二小段 ｜ 土地總面積6,510.0m² ｜ 建物總面積(估)15,201.25m²</div>
         <div class="header-sub">本系統僅供福國路都更推動小組內部溝通與進度追蹤使用，嚴禁外流或用於其他商業用途。資料內容已進行個資遮蔽處理。</div>
       </div>
       <div class="export-btns">
@@ -264,7 +264,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
   <div id="tab-dashboard" class="tab-panel active">
     <div class="card">
       <div class="card-title">🏆 都更同意門檻</div>
-      <div class="card-sub" id="tc-summary">4項須全部達 80% 方可申請</div>
+      <div class="card-sub" id="tc-summary">4項須全部達 75% 方可申請</div>
       <div class="tc-grid">
         <div class="tc ng" id="tc3"><span class="tc-badge ng" id="tc3-badge">未達標</span><div class="tc-icon">🏠</div><div class="tc-title">建物所有權人數</div><div class="tc-pct ng" id="tc3-pct">—</div><div class="tc-detail" id="tc3-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc3-bar" style="width:0%"></div></div><div class="tc-needed" id="tc3-n"></div></div>
         <div class="tc ng" id="tc1"><span class="tc-badge ng" id="tc1-badge">未達標</span><div class="tc-icon">👤</div><div class="tc-title">土地所有權人數</div><div class="tc-pct ng" id="tc1-pct">—</div><div class="tc-detail" id="tc1-d"></div><div class="tc-bar"><div class="tc-bar-f ng" id="tc1-bar" style="width:0%"></div></div><div class="tc-needed" id="tc1-n"></div></div>
