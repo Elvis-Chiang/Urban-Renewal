@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>福國路都更整合系統</title>
+<title>福國路都更整合系統 v9.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="importmap">
@@ -61,7 +61,9 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
 .tc-pct{font-size:28px;font-weight:900;line-height:1}
 .tc-pct.ok{color:var(--green)}.tc-pct.ng{color:var(--slate-900)}
 .tc-detail{font-size:10px;color:var(--slate-400);margin-top:2px}
-.tc-bar{margin-top:7px;background:var(--slate-200);border-radius:99px;height:5px;overflow:hidden}
+.tc-bar{margin-top:7px;background:var(--slate-200);border-radius:99px;height:5px;overflow:visible;position:relative}
+.tc-bar::before{content:'';position:absolute;top:-4px;left:75%;width:2px;height:13px;background:var(--red);border-radius:1px;opacity:.8}
+.tc-bar::after{content:'75%';position:absolute;top:-16px;left:75%;transform:translateX(-50%);font-size:9px;font-weight:800;color:var(--red);white-space:nowrap}
 .tc-bar-f{height:100%;border-radius:99px;transition:width 1s ease}
 .tc-bar-f.ok{background:var(--green)}.tc-bar-f.ng{background:var(--amber)}
 .tc-needed{font-size:10px;color:var(--amber);margin-top:3px;min-height:13px}
