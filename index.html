@@ -241,7 +241,7 @@ body{font-family:'Noto Sans TC',sans-serif;background:#f0f4f8;color:var(--slate-
       <div class="header-icon">🏗️</div>
       <div>
         <div class="header-title">福國路都更整合系統</div>
-        <div class="header-sub">v9.2 ｜ 士林區蘭雅段二小段 ｜ 土地總面積6,510.0m² ｜ 建物總面積(估)15,201.25m²</div>
+        <div class="header-sub">v9.3 ｜ 士林區蘭雅段二小段 ｜ 土地總面積6,510.0m² ｜ 建物總面積(估)15,201.25m²</div>
         <div class="header-sub">本系統僅供福國路都更推動小組內部溝通與進度追蹤使用，嚴禁外流或用於其他商業用途。資料內容已進行個資遮蔽處理。</div>
       </div>
       <div class="export-btns">
@@ -1176,32 +1176,36 @@ function getBuildingPos(addr){
     '福國路44號': 'g_fg42_44',
     '福國路46號': 'g_fg46_48',
     '福國路48號': 'g_fg46_48',
+    '福國路26號': 'g_fg26_28',
+    '福國路28號': 'g_fg26_28',
   };
 
   // 群組 → 主門牌位置 + sw 倍率（2門牌=2倍寬）
   // 注意：c 座標取兩個門牌的中點
   // 奇數側原 sw=0.9 → 雙門牌 1.8；偶數側原 sw=1.0 → 雙門牌 2.0
   var GROUP_POS = {
-    'g_6_1_3':   {c:7.60, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄1號','福國路50巷6弄3號']}, // (8.05+7.15)/2
-    'g_6_5_7':   {c:5.80, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄5號','福國路50巷6弄7號']}, // (6.25+5.35)/2
-    'g_6_9_11':  {c:4.00, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄9號','福國路50巷6弄11號']}, // (4.45+3.55)/2
-    'g_6_13_15': {c:2.20, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄13號','福國路50巷6弄15號']}, // (2.65+1.75)/2
-    'g_6_2_4':   {c:7.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄2號','福國路50巷6弄4號']}, // (8+7)/2, sw=2.0
-    'g_6_6_8':   {c:5.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄6號','福國路50巷6弄8號']}, // (6+5)/2, sw=2.0
-    'g_6_10_12': {c:3.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄10號','福國路50巷6弄12號']}, // (4+3)/2, sw=2.0
+    // addrs: [大號(idx=0=左半), 小號(idx=1=右半)] — 小號 c 值較大(東側/右側)
+    'g_6_1_3':   {c:7.60, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄3號','福國路50巷6弄1號']}, // (7.15+8.05)/2
+    'g_6_5_7':   {c:5.80, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄7號','福國路50巷6弄5號']}, // (5.35+6.25)/2
+    'g_6_9_11':  {c:4.00, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄11號','福國路50巷6弄9號']}, // (3.55+4.45)/2
+    'g_6_13_15': {c:2.20, r:5.1, sw:1.8, face:'north', addrs:['福國路50巷6弄15號','福國路50巷6弄13號']}, // (1.75+2.65)/2
+    'g_6_2_4':   {c:7.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄4號','福國路50巷6弄2號']}, // (7+8)/2, sw=2.0
+    'g_6_6_8':   {c:5.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄8號','福國路50巷6弄6號']}, // (5+6)/2, sw=2.0
+    'g_6_10_12': {c:3.50, r:3.1, sw:2.0, face:'south', addrs:['福國路50巷6弄12號','福國路50巷6弄10號']}, // (3+4)/2, sw=2.0
 
     // ── 50巷2弄雙門牌 ──
-    'g_2_1_3':   {c:7.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄1號','福國路50巷2弄3號']}, // (8+7)/2
-    'g_2_5_7':   {c:5.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄5號','福國路50巷2弄7號']}, // (6+5)/2
-    'g_2_9_11':  {c:3.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄9號','福國路50巷2弄11號']}, // (4+3)/2
-    'g_2_13_15': {c:1.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄13號','福國路50巷2弄15號']}, // (2+1)/2
+    'g_2_1_3':   {c:7.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄3號','福國路50巷2弄1號']}, // (7+8)/2
+    'g_2_5_7':   {c:5.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄7號','福國路50巷2弄5號']}, // (5+6)/2
+    'g_2_9_11':  {c:3.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄11號','福國路50巷2弄9號']}, // (3+4)/2
+    'g_2_13_15': {c:1.5, r:2, sw:2.0, face:'north', addrs:['福國路50巷2弄15號','福國路50巷2弄13號']}, // (1+2)/2
 
     // ── 福國路主線雙門牌 ──
-    'g_fg30_32': {c:3.1, r:0, sw:1.2, face:'north', addrs:['福國路30號','福國路32號']}, // (2.8+3.4)/2, sw=1.2
-    'g_fg34_36': {c:4.3, r:0, sw:1.2, face:'north', addrs:['福國路34號','福國路36號']}, // (4.0+4.6)/2, sw=1.2
-    'g_fg38_40': {c:5.5, r:0, sw:1.2, face:'north', addrs:['福國路38號','福國路40號']}, // (5.2+5.8)/2, sw=1.2
-    'g_fg42_44': {c:6.7, r:0, sw:1.2, face:'north', addrs:['福國路42號','福國路44號']}, // (6.4+7.0)/2, sw=1.2
-    'g_fg46_48': {c:7.9, r:0, sw:1.2, face:'north', addrs:['福國路46號','福國路48號']}, // (7.6+8.2)/2, sw=1.2
+    'g_fg30_32': {c:3.1, r:0, sw:1.2, face:'north', addrs:['福國路32號','福國路30號']}, // (3.4+2.8)/2, sw=1.2
+    'g_fg34_36': {c:4.3, r:0, sw:1.2, face:'north', addrs:['福國路36號','福國路34號']}, // (4.6+4.0)/2, sw=1.2
+    'g_fg38_40': {c:5.5, r:0, sw:1.2, face:'north', addrs:['福國路40號','福國路38號']}, // (5.8+5.2)/2, sw=1.2
+    'g_fg42_44': {c:6.7, r:0, sw:1.2, face:'north', addrs:['福國路44號','福國路42號']}, // (7.0+6.4)/2, sw=1.2
+    'g_fg46_48': {c:7.9, r:0, sw:1.2, face:'north', addrs:['福國路48號','福國路46號']}, // (8.2+7.6)/2, sw=1.2
+    'g_fg26_28': {c:1.9, r:0, sw:1.2, face:'north', addrs:['福國路28號','福國路26號']}, // (2.2+1.6)/2, sw=1.2
   };
 
   // 查群組
@@ -1217,10 +1221,8 @@ function getBuildingPos(addr){
     '中山北路六段35巷44號':{c:0,r:1.4, sd:0.7, face:'west'},
     '中山北路六段35巷46號':{c:0,r:0.7, sd:0.7, face:'west'},
 
-    // 福國路主線（已由群組處理：30/32, 34/36, 38/40, 42/44, 46/48）
+    // 福國路主線（已由群組處理：26/28, 30/32, 34/36, 38/40, 42/44, 46/48）
     '福國路24號':{c:1,r:0, sw:0.6, face:'north'},
-    '福國路26號':{c:1.6,r:0, sw:0.6, face:'north'},
-    '福國路28號':{c:2.2,r:0, sw:0.6, face:'north'},
 
     // 50巷2弄（已由群組處理：1/3, 5/7, 9/11, 13/15）
 
@@ -1247,7 +1249,6 @@ var map3dReady = false;
 var hoveredFloor = null;
 var addrStatsGlobal = {}; // buildScene 後保留供 zoom 等使用
 var addrLabelMap = {}; // addr → Sprite，門牌直接引用（hover 用）
-var addrRoofLabelMap = {}; // addr → Mesh，屋頂門牌標籤（zoom-in 用）
 var floorLabelMap = {}; // addr → [Mesh]，每層樓的標籤
 var FLOOR_WIDTH = 5, FLOOR_DEPTH = 5, FLOOR_HEIGHT = 1, SPACING = 5;
 
@@ -1367,10 +1368,14 @@ function makeFloorLabel(text, opts){
   opts = opts || {};
   var face = opts.face || 'south';
   var isAddr = opts.isAddr || false;
+  var isAddrOnFloor = opts.isAddrOnFloor || false; // 群組 1F 加註門牌
   var canvas = document.createElement('canvas');
   if(isAddr){
     // 門牌文字較長，增加 canvas 寬度
     canvas.width = 640; canvas.height = 100;
+  } else if(isAddrOnFloor){
+    // 1F+門牌簡稱，寬度適中
+    canvas.width = 320; canvas.height = 64;
   } else {
     canvas.width = 128; canvas.height = 64;
   }
@@ -1384,6 +1389,12 @@ function makeFloorLabel(text, opts){
     ctx.shadowColor = '#000';
     ctx.shadowBlur = 6;
     ctx.fillText(text, canvas.width/2, canvas.height/2);
+  } else if(isAddrOnFloor){
+    ctx.font = 'bold 24px "Segoe UI", Noto Sans TC, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.shadowColor = '#000';
+    ctx.shadowBlur = 4;
+    ctx.fillText(text, canvas.width/2, canvas.height/2);
   } else {
     ctx.font = 'bold 32px "Segoe UI", sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
@@ -1395,8 +1406,9 @@ function makeFloorLabel(text, opts){
   tex.minFilter = THREE.LinearFilter;
   var mat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthTest:false, side:THREE.DoubleSide});
   // 門牌標籤：canvas 640:100 = 6.4:1 → planeW:planeH 也需保持一致
-  var planeW = isAddr ? (6.4 * (opts.sw || 1.0)) : 1.6;
-  var planeH = isAddr ? 1.0 : 0.7;
+  // 1F+門牌：canvas 320:64 = 5:1
+  var planeW = isAddr ? (6.4 * (opts.sw || 1.0)) : isAddrOnFloor ? 4.0 : 1.6;
+  var planeH = isAddr ? 1.0 : isAddrOnFloor ? 0.8 : 0.7;
   var plane = new THREE.Mesh(new THREE.PlaneGeometry(planeW, planeH), mat);
 
   // 根據 face 方向旋轉平面並偏移到建物正面表面
@@ -1570,7 +1582,13 @@ function buildScene(){
       // 樓層標籤
       var labelKey = item.addr; // 每個門牌各自記錄
       if(!floorLabelMap[labelKey]) floorLabelMap[labelKey] = [];
-      var flLbl = makeFloorLabel(item.floorNum+'F', {face: pos.face, sw: isGrouped ? scaleW/2 : scaleW, sd: scaleD});
+      // 群組建物：1F 標籤加註門牌簡稱（如「1F 6弄1號」）
+      var floorLabelText = item.floorNum+'F';
+      if(isGrouped && item.floorNum === 1){
+        var addrShort = item.addr.replace('福國路50巷','').replace('福國路','FG').replace('中山北路六段35巷','中35巷');
+        floorLabelText = '1F ' + addrShort;
+      }
+      var flLbl = makeFloorLabel(floorLabelText, {face: pos.face, sw: isGrouped ? scaleW/2 : scaleW, sd: scaleD, isAddrOnFloor: isGrouped && item.floorNum === 1});
       flLbl.position.set(xOffset + flLbl.userData.offsetX, y, flLbl.userData.offsetZ);
       flLbl.visible = false;
       flLbl.userData = {isFloorLabel: true};
@@ -1615,15 +1633,6 @@ function buildScene(){
       roofLbl.material.depthTest = false; // 不與其它物體比較深度
       roofLbl.material.needsUpdate = true;
       g.add(roofLbl);
-
-      // 屋頂門牌標籤（zoom-in 顯示）— 群組門牌用合併寬度
-      var labelSw = pos.groupAddrs ? (pos.sw || 2.0) : (pos.sw || 1.0);
-      var addrRoofLbl = makeFloorLabel(addrShort, {face: pos.face, sw: labelSw, sd: scaleD, isAddr: true});
-      addrRoofLbl.position.set(addrRoofLbl.userData.offsetX, st.maxFloor*FLOOR_HEIGHT + 0.35, addrRoofLbl.userData.offsetZ);
-      addrRoofLbl.visible = false;
-      addrRoofLbl.userData.isAddrRoofLabel = true;
-      g.add(addrRoofLbl);
-      addrRoofLabelMap[stKey] = addrRoofLbl;
     }
   });
 
@@ -2034,8 +2043,6 @@ function showFloorLabels(key){
     var labels = floorLabelMap[addr];
     if(labels) labels.forEach(function(sp){ sp.visible = true; });
   });
-  var roofLbl = addrRoofLabelMap[key];
-  if(roofLbl) roofLbl.visible = true;
 }
 
 function hideFloorLabels(key){
@@ -2051,16 +2058,11 @@ function hideFloorLabels(key){
     var labels = floorLabelMap[addr];
     if(labels) labels.forEach(function(sp){ sp.visible = false; });
   });
-  var roofLbl = addrRoofLabelMap[key];
-  if(roofLbl) roofLbl.visible = false;
 }
 
 function hideAllFloorLabels(){
   Object.keys(floorLabelMap).forEach(function(addr){
     hideFloorLabels(addr);
-  });
-  Object.keys(addrRoofLabelMap).forEach(function(addr){
-    addrRoofLabelMap[addr].visible = false;
   });
 }
 
@@ -2098,7 +2100,7 @@ function update3DMap(){
     });
     scene.remove(buildingGroups[a]);
   });
-  floorMeshes=[]; buildingGroups={}; addrLabelMap={}; addrRoofLabelMap={}; floorLabelMap={}; beamMeshes=[];
+  floorMeshes=[]; buildingGroups={}; addrLabelMap={}; floorLabelMap={}; beamMeshes=[];
   buildScene();
   if(!beamVisible) beamMeshes.forEach(function(m){ m.visible = false; });
 }
@@ -2123,7 +2125,7 @@ window.map3dReady=false;
 <div id="three-overlay">
   <div id="3d-overlay-header">
     <span style="font-size:20px">🏗️</span>
-    <span class="title">3D 建物地圖 — 福國路都更 v9.1</span>
+    <span class="title">3D 建物地圖 — 福國路都更 v9.3</span>
     <div id="3d-overlay-filters">
       <button class="filter-btn active" id="beam-toggle" onclick="toggleBeam(this)">💡 光柱 ON</button>
       <button class="filter-btn" onclick="close3DOverlay()">✕ 關閉</button>
